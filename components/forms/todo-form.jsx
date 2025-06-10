@@ -52,7 +52,7 @@ export function TodoForm({ todo }) {
     end: z.string().datetime().nullable(),
     duration: z.string().nullable().optional(),
     priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
-    status: z.enum(["TODO", "IN_PROGRESS", "DONE"]),
+    status: z.enum(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"]),
     archived: z.boolean(),
     tags: z.string().nullable().optional(),
   });

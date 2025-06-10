@@ -4,12 +4,12 @@ import { toast } from "sonner";
 
 const BASE_URL = "https://api.oluwasetemi.dev/tasks";
 
-export function useTodos({ search, status, page = 2, limit = 10 }) {
+export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
   const queryClient = useQueryClient();
 
   // GET Todos (server-side pagination + client-side search/filter)
   const query = useQuery({
-    queryKey: ["todos", search, status, page],
+    queryKey: ["todos", search, status, page, priority],
     queryFn: async () => {
       const res = await axios.get(BASE_URL, {
         params: { page, limit },
@@ -23,13 +23,14 @@ export function useTodos({ search, status, page = 2, limit = 10 }) {
         .filter((todo) =>
           todo.name.toLowerCase().includes(search?.toLowerCase() || "")
         )
-        .filter((todo) =>
-          status === "all"
-            ? true
-            : status === "completed"
-            ? todo.status === "completed"
-            : todo.status !== "completed"
-        );
+        .filter((todo) => {
+          if (status === "all") return true;
+          return todo.status === status;
+        })
+        .filter((todo) => {
+          if (priority === "all") return true;
+          return todo.priority === priority;
+        });
 
       return { todos, meta: { total } };
     },
