@@ -19,8 +19,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useDebounce } from "@/lib/debounce";
-import { useTodos } from "@/hooks/use-todos";
+
 import TodoCardSkeleton, { TodoCard } from "@/components/todo-card";
+import { useTodos } from "@/hooks/use-todos";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -95,6 +96,7 @@ export default function TodosPage() {
                 time={new Date(todo.createdAt).toLocaleDateString()}
                 priority={todo.priority || "Normal"} // Default to "Normal" if not set
                 tags={todo.tags} // Join tags or show default
+                id={todo.id}
               />
               // <div key={todo.id} className="p-4 border rounded">
               //   <h3 className="font-bold">{todo.name}</h3>

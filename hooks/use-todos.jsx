@@ -66,11 +66,22 @@ export function useTodos({ search, status, page = 1, limit = 10 }) {
     },
   });
 
+  const getOne = (id) =>
+    useQuery({
+      queryKey: ["todo", id],
+      queryFn: async () => {
+        const res = await axios.get(`${BASE_URL}/${id}`);
+        return res.data;
+      },
+      enabled: !!id, // Only run if ID is provided
+    });
+
   return {
     ...query,
     create,
     update,
     remove,
+    getOne,
   };
 }
 
