@@ -2,6 +2,8 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers/provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { TodoModal } from "@/components/modals/todo-modal";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -18,7 +20,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${poppins.className} `} suppressHydrationWarning>
         <Providers>
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <NuqsAdapter>
+            <TodoModal />
+            <Toaster />
+            {children}
+          </NuqsAdapter>
         </Providers>
       </body>
     </html>
