@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const BASE_URL = "https://api.oluwasetemi.dev/tasks";
 
-export function useTodos({ search, status, page = 1, limit = 10 }) {
+export function useTodos({ search, status, page = 2, limit = 10 }) {
   const queryClient = useQueryClient();
 
   // GET Todos (server-side pagination + client-side search/filter)
@@ -30,7 +31,7 @@ export function useTodos({ search, status, page = 1, limit = 10 }) {
             : todo.status !== "completed"
         );
 
-      return { todos, total };
+      return { todos, meta: { total } };
     },
   });
 
@@ -42,17 +43,24 @@ export function useTodos({ search, status, page = 1, limit = 10 }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
+      toast.success("Todo created successfully", {
+        description: "Your new todo has been added to the list.",
+      });
     },
   });
 
   // PATCH (Update Todo)
   const update = useMutation({
     mutationFn: async ({ id, data }) => {
+      console.log(id, data);
       const res = await axios.patch(`${BASE_URL}/${id}`, data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
+      toast.success("Todo updated successfully", {
+        description: "The todo has been updated in your list.",
+      });
     },
   });
 
@@ -63,6 +71,9 @@ export function useTodos({ search, status, page = 1, limit = 10 }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
+      toast.success("Todo deleted successfully", {
+        description: "The todo has been removed from your list.",
+      });
     },
   });
 

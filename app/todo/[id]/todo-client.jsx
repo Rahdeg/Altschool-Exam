@@ -1,5 +1,15 @@
 "use client";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -10,15 +20,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useRepoModal } from "@/hooks/use-modal";
 import { useTodos } from "@/hooks/use-todos";
 import { cn, formatISODate, priorityColor, statusColor } from "@/lib/utils";
+import { ro } from "date-fns/locale";
 import { PencilIcon, Trash } from "lucide-react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function TodoPage({ props }) {
   const { getOne } = useTodos({});
   const { data: todo, isLoading, error } = getOne(props);
+  const { openModal } = useRepoModal();
+  const router = useRouter();
+
+  const { remove } = useTodos({});
+
+  const handleDelete = (id) => {
+    return async () => {
+      try {
+        await remove.mutateAsync(id);
+        router.push("/");
+      } catch (error) {
+        console.error("Failed to delete todo:", error);
+      }
+    };
+  };
 
   if (isLoading) return <p>Loading</p>;
   if (error) return <p className="p-6 text-red-500">Todo not found</p>;
@@ -67,20 +95,47 @@ export default function TodoPage({ props }) {
                 {todo.status}
               </Badge>
               {todo.tags && <Badge> {todo.tags}</Badge>}
-              {todo.duration && <Badge>Duration: {todo.duration}</Badge>}
+              {todo.duration && (
+                <Badge className="bg-orange-400"> {todo.duration} MINS</Badge>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" className=" cursor-pointer">
+              <Button
+                variant="ghost"
+                className=" cursor-pointer"
+                onClick={() => openModal("edit", todo)}
+              >
                 <span className="hidden md:block">Update Todo</span>
 
                 <PencilIcon className="size-4 text-black cursor-pointer ml-2" />
               </Button>
 
-              <Button className=" cursor-pointer bg-red-500 hover:bg-red-600 ">
-                <span className="hidden md:block">Delete Todo</span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className=" cursor-pointer bg-red-500 hover:bg-red-600 ">
+                    <span className="hidden md:block">Delete Todo</span>
 
-                <Trash className="size-4 text-white  ml-2" />
-              </Button>
+                    <Trash className="size-4 text-white  ml-2" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      your account and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete(todo.id)}>
+                      Continue
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
 
