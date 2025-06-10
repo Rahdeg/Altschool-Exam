@@ -24,12 +24,17 @@ import TodoCardSkeleton, { TodoCard } from "@/components/todo-card";
 import { useTodos } from "@/hooks/use-todos";
 import { Button } from "@/components/ui/button";
 import { useRepoModal } from "@/hooks/use-modal";
+import { RefreshCcw } from "lucide-react";
+import { set } from "date-fns";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function TodosPage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
   const [status, setStatus] = useQueryState("status", { defaultValue: "all" });
+  const [priority, setPriority] = useQueryState("priority", {
+    defaultValue: "all",
+  });
   const [page, setPage] = useQueryState("page", {
     defaultValue: 1,
     parse: Number,
@@ -42,6 +47,7 @@ export default function TodosPage() {
   const { data: { todos = [], meta = {} } = {}, isLoading } = useTodos({
     search: debouncedSearch,
     status,
+    priority,
     page,
     limit: ITEMS_PER_PAGE,
   });
@@ -51,6 +57,12 @@ export default function TodosPage() {
   const goToPage = (p) => {
     if (p < 1 || p > totalPages) return;
     setPage(p);
+  };
+
+  const clearFilters = () => {
+    setSearch(null);
+    setStatus("all");
+    setPriority("all");
   };
 
   return (
@@ -67,9 +79,9 @@ export default function TodosPage() {
             placeholder="Search by title"
           />
           <Select
-            value={status}
+            value={priority}
             onValueChange={(val) => {
-              setStatus(val);
+              setPriority(val);
               setPage(1);
             }}
           >
@@ -78,10 +90,39 @@ export default function TodosPage() {
             </SelectTrigger>
             <SelectContent className="w-full">
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="incomplete">Incomplete</SelectItem>
+              <SelectItem value="LOW">LOW</SelectItem>
+              <SelectItem value="MEDIUM">MEDIUM</SelectItem>
+              <SelectItem value="HIGH">HIGH</SelectItem>
             </SelectContent>
           </Select>
+          <div className=" flex">
+            <Select
+              value={status}
+              onValueChange={(val) => {
+                setStatus(val);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-fit">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent className="w-full">
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="TODO">TODO</SelectItem>
+                <SelectItem value="DONE">DONE</SelectItem>
+                <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
+                <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              className="cursor-pointer ml-2"
+              onClick={() => clearFilters()}
+            >
+              <RefreshCcw />
+            </Button>
+          </div>
+
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer"
             onClick={() => openModal("create")}
