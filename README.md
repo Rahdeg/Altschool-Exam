@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ✅ Todo App
 
-## Getting Started
+A modern, responsive Todo web application that lets users manage tasks with advanced filtering, status control, and persistent state. Built with Next.js, Tailwind CSS, Zustand, and TanStack React Query for performance, accessibility, and a delightful user experience.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+- 📝 Add, update, and delete todo items
+- 🔄 Filter todos by status: All, Done, or Incomplete and By Priority
+- 📌 Update tasks as done or revert to TODO, IN PROGRESS
+- 🔍 Search tasks by name 
+- ⏳ Skeleton loading states with ShadCN UI
+- 🌐 Responsive layout across all devices
+- 🧠 State management with Zustand and nuqs for query management
+- 🔁 Efficient data fetching and cache management with React Query
+- ⚠️ Error boundaries and custom 404 page
+
+---
+
+## 🛠️ Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Rahdeg/Altschool-Exam
+   cd todo-exam
+   bun install
+   bun run dev
+
+   ```
+
+   | Script           | Description                  |
+| ---------------- | ---------------------------- |
+| `bun run dev`    | Start the development server |
+| `bun run build`  | Build the app for production |
+| `bun run start`  | Start the production server  |
+
+    ```
+##  🧰 Technology Stack & Architecture
+
+- Framework: Next.js (App Router)
+
+- UI & Styling: Tailwind CSS, ShadCN UI
+
+- State Management: Zustand,nuqs (persistent)
+
+- Data Layer: TanStack React Query
+
+- Routing: Nested routes with dynamic loading
+
+- UI State: Skeletons, modals, conditional rendering
+
+```
+## Architecture Notes
+- Modular folder structure for scalability
+- React Query separates server state and handles caching
+- Tailwind and ShadCN components offer a polished UI
+
+```
+## Api Documentation
+
+- [API Documentation](https://api.oluwasetemi.dev/reference) .
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🐞 Known Issues
+- No authentication implemented
+- Limited support for recurring or timed tasks
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+## 🔮 Planned Improvements
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 🔐 Add user authentication (optional guest mode)
 
-## Learn More
+- ☁️ Sync data to cloud/database
 
-To learn more about Next.js, take a look at the following resources:
+- 🔔 Add due dates and notifications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 📊 Task stats dashboard (e.g., % completed)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 🧪 Add tests using Jest and React Testing Library
 
-## Deploy on Vercel
+```
+## 👨‍💻 Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Adegbite Raheem
+- Frontend Developer | Tech Freelancer
+- walett95@gmail.com
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+

@@ -163,7 +163,7 @@ export function TodoForm({ todo }) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="name">Name</FormLabel>
+                    <FormLabel htmlFor="name">Title</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
