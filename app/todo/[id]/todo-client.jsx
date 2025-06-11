@@ -94,7 +94,7 @@ export default function TodoPage({ props }) {
                   statusColor[todo.status] || "bg-muted text-muted-foreground"
                 )}
               >
-                {todo.status}
+                {todo.status === "IN_PROGRESS" ? "IN PROGRESS" : todo.status}
               </Badge>
               {todo.tags && <Badge> {todo.tags}</Badge>}
               {todo.duration && (

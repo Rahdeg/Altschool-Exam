@@ -213,7 +213,7 @@ export function TodoForm({ todo }) {
                       </FormControl>
                       <SelectContent className="w-full">
                         <SelectItem value="TODO">TODO</SelectItem>
-                        <SelectItem value="IN_PROGRESS">IN_PROGRESS</SelectItem>
+                        <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
                         <SelectItem value="DONE">DONE</SelectItem>
                         <SelectItem value="CANCELLED">CANCELLED</SelectItem>
                       </SelectContent>

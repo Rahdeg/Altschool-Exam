@@ -71,7 +71,7 @@ export const TodoCard = ({ todo }) => {
                 statusColor[todo.status] || "bg-muted text-muted-foreground"
               )}
             >
-              {todo.status}
+              {todo.status === "IN_PROGRESS" ? "IN PROGRESS" : todo.status}
             </Badge>
           </div>
         </div>
