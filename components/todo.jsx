@@ -33,9 +33,9 @@ const ITEMS_PER_PAGE = 10;
 
 export default function TodosPage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
-  const [status, setStatus] = useQueryState("status", { defaultValue: "all" });
+  const [status, setStatus] = useQueryState("status", { defaultValue: "" });
   const [priority, setPriority] = useQueryState("priority", {
-    defaultValue: "all",
+    defaultValue: "",
   });
   const [page, setPage] = useQueryState("page", {
     defaultValue: 1,
@@ -48,13 +48,14 @@ export default function TodosPage() {
 
   const { data: { todos = [], meta = {} } = {}, isLoading } = useTodos({
     search: debouncedSearch,
-    status,
-    priority,
+    status: status || "all",
+    priority: priority || "all",
     page,
     limit: ITEMS_PER_PAGE,
   });
 
   const totalPages = meta.total ? Math.ceil(meta.total / ITEMS_PER_PAGE) : 1;
+  const showPagination = todos.length >= ITEMS_PER_PAGE;
 
   const goToPage = (p) => {
     if (p < 1 || p > totalPages) return;
@@ -62,9 +63,9 @@ export default function TodosPage() {
   };
 
   const clearFilters = () => {
-    setSearch(null);
-    setStatus("all");
-    setPriority("all");
+    setSearch("");
+    setStatus("");
+    setPriority("");
   };
 
   return (
@@ -80,18 +81,19 @@ export default function TodosPage() {
             }}
             placeholder="Search by title"
           />
+
           <Select
-            value={priority}
+            value={priority || ""}
             onValueChange={(val) => {
               setPriority(val);
               setPage(1);
             }}
           >
             <SelectTrigger className="w-full md:w-fit">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent className="w-full">
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">Priority</SelectItem>
               <SelectItem value="LOW">LOW</SelectItem>
               <SelectItem value="MEDIUM">MEDIUM</SelectItem>
               <SelectItem value="HIGH">HIGH</SelectItem>
@@ -99,17 +101,17 @@ export default function TodosPage() {
           </Select>
           <div className=" flex">
             <Select
-              value={status}
+              value={status || ""}
               onValueChange={(val) => {
                 setStatus(val);
                 setPage(1);
               }}
             >
               <SelectTrigger className="w-full md:w-fit">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="w-full">
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">Status</SelectItem>
                 <SelectItem value="complete">COMPLETE</SelectItem>
                 <SelectItem value="incomplete">INCOMPLETE</SelectItem>
                 <SelectItem value="TODO">TODO</SelectItem>
@@ -138,83 +140,98 @@ export default function TodosPage() {
         </div>
       </header>
 
-      {/* Todo List */}
       {isLoading ? (
         <section className="grid gap-4 max-w-2xl w-full pt-[200px] md:pt-[60px]">
           <TodoCardSkeleton />
         </section>
-      ) : (
+      ) : todos.length > 0 ? (
         <>
           <div className="grid gap-4 max-w-2xl w-full pt-[200px] md:pt-[60px]">
             {todos.map((todo) => (
               <TodoCard key={todo.id} todo={todo} />
             ))}
           </div>
-
-          {/* Pagination */}
-          <footer>
-            {totalPages > 1 && (
-              <Pagination className="mt-6">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToPage(page - 1);
-                      }}
-                      className={
-                        page === 1 ? "pointer-events-none opacity-50" : ""
-                      }
-                    />
-                  </PaginationItem>
-
-                  {/* Show max 10 pages window */}
-                  {Array.from({ length: Math.min(10, totalPages) }).map(
-                    (_, i) => {
-                      let start = Math.max(1, page - 5);
-                      let end = Math.min(totalPages, start + 9);
-
-                      if (end - start < 9) start = Math.max(1, end - 9);
-                      const pageNum = start + i;
-
-                      return (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink
-                            href="#"
-                            isActive={pageNum === page}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              goToPage(pageNum);
-                            }}
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    }
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToPage(page + 1);
-                      }}
-                      className={
-                        page === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
-          </footer>
+        </>
+      ) : (
+        <>
+          <p className="text-center text-gray-500 italic pt-[200px] md:pt-[60px]">
+            No task found matching the search query.
+          </p>
+          <div className="flex justify-center items-center mt-4 gap-x-4">
+            <Button
+              variant="outline"
+              className="cursor-pointer ml-2"
+              onClick={() => clearFilters()}
+            >
+              Refresh
+              <RefreshCcw />
+            </Button>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer"
+              onClick={() => openModal("create")}
+            >
+              Create Task
+              <span className="ml-2">+</span>
+            </Button>
+          </div>
         </>
       )}
+      {/* Pagination */}
+      <footer>
+        {todos?.length > 0 && (page > 1 || showPagination) && (
+          <Pagination className="mt-6">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToPage(page - 1);
+                  }}
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+
+              {/* Show max 10 pages window */}
+              {Array.from({ length: Math.min(10, totalPages) }).map((_, i) => {
+                let start = Math.max(1, page - 5);
+                let end = Math.min(totalPages, start + 9);
+
+                if (end - start < 9) start = Math.max(1, end - 9);
+                const pageNum = start + i;
+
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      href="#"
+                      isActive={pageNum === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(pageNum);
+                      }}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToPage(page + 1);
+                  }}
+                  className={
+                    page === totalPages ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+      </footer>
     </div>
   );
 }
