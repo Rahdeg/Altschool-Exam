@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export default async function ErrorPage({ params }) {
   // Simulate an error
   throw new Error("Test error from error page");

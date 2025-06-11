@@ -80,11 +80,11 @@ export function TodoForm({ todo }) {
 
   // End time state
   const [openEnd, setOpenEnd] = useState(false);
-  const [endDate, setEndDate] = useState(
+  const [endDate, setEndDate] = useState(undefined);
+  const [endTime, setEndTime] = useState("11:00:00");
+  const [endDateTime, setEndDateTime] = useState(
     todo?.end ? new Date(todo.end) : undefined
   );
-  const [endTime, setEndTime] = useState("11:00:00");
-  const [endDateTime, setEndDateTime] = useState(undefined);
 
   useEffect(() => {
     if (dateOnly && time) {
@@ -152,7 +152,7 @@ export function TodoForm({ todo }) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{mode === "edit" ? "Edit" : "Create"} Todo</CardTitle>
+        <CardTitle>{mode === "edit" ? "Edit" : "Create"} Task</CardTitle>
       </CardHeader>
       <CardContent className="p-6 w-full">
         <Form {...form}>
@@ -163,7 +163,7 @@ export function TodoForm({ todo }) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel htmlFor="name">Name</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -181,11 +181,11 @@ export function TodoForm({ todo }) {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="message-2">Description</FormLabel>
+                    <FormLabel htmlFor="description">Description</FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
-                        id="message-2"
+                        id="description"
                         disabled={create.isPending || update.isPending}
                         type="text"
                         placeholder="Enter todo description"
@@ -201,7 +201,7 @@ export function TodoForm({ todo }) {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel htmlFor="status">Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -228,7 +228,7 @@ export function TodoForm({ todo }) {
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Priority</FormLabel>
+                    <FormLabel htmlFor="priority">Priority</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -253,7 +253,7 @@ export function TodoForm({ todo }) {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags</FormLabel>
+                    <FormLabel htmlFor="tags">Tags</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -280,7 +280,7 @@ export function TodoForm({ todo }) {
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration</FormLabel>
+                    <FormLabel htmlFor="duration">Duration</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}

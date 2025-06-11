@@ -18,6 +18,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { useRepoModal } from "@/hooks/use-modal";
 import { useTodos } from "@/hooks/use-todos";
+import { Hint } from "./hint";
 
 // 🎨 Priority colors
 
@@ -75,24 +76,28 @@ export const TodoCard = ({ todo }) => {
       </Link>
 
       <div className=" rounded-2xl bg-white rounded-l-none p-2 h-full w-fit flex-col flex items-center justify-center gap-y-2 ml-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className=" cursor-pointer"
-          onClick={() => openModal("edit", todo)}
-        >
-          <PencilIcon className="size-4 text-black cursor-pointer" />
-        </Button>
+        <Hint label="Edit task" side="right" align="start">
+          <Button
+            variant="ghost"
+            size="sm"
+            className=" cursor-pointer"
+            onClick={() => openModal("edit", todo)}
+          >
+            <PencilIcon className="size-4 text-black cursor-pointer" />
+          </Button>
+        </Hint>
 
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              size="sm"
-              className=" cursor-pointer bg-red-500 hover:bg-red-600 size-6"
-            >
-              <Trash className="size-4 text-white " />
-            </Button>
-          </AlertDialogTrigger>
+          <Hint label="Delete task" side="right" align="start">
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                className=" cursor-pointer bg-red-500 hover:bg-red-600 size-6"
+              >
+                <Trash className="size-4 text-white " />
+              </Button>
+            </AlertDialogTrigger>
+          </Hint>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -113,43 +118,3 @@ export const TodoCard = ({ todo }) => {
     </div>
   );
 };
-
-export const TodoCardSkeleton = () => {
-  return (
-    <div className="flex items-center justify-between w-full">
-      {/* Left card section */}
-      <div className="bg-white rounded-2xl rounded-r-none shadow p-4 w-full max-w-2xl flex items-center justify-between">
-        <div>
-          <div className="mb-2">
-            <div className="flex gap-x-2 items-center">
-              <Skeleton className="h-6 w-16 rounded-full" />
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/4" />
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Skeleton className="h-6 w-20 rounded-full" />
-        </div>
-      </div>
-
-      {/* Right action section */}
-      <div className="rounded-2xl bg-white rounded-l-none p-2 h-full w-fit flex-col flex items-center justify-center gap-y-2 ml-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled
-          onClick={() => openModal("edit", {})}
-        >
-          <PencilIcon className="size-4 text-gray-300" />
-        </Button>
-        <Button size="icon" className="bg-red-200" disabled>
-          <Trash className="size-4 text-red-400" />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-export default TodoCardSkeleton;

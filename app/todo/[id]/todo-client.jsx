@@ -1,4 +1,6 @@
 "use client";
+
+import TodoDetailsSkeleton from "@/components/loaders/todo-skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,11 +25,11 @@ import {
 import { useRepoModal } from "@/hooks/use-modal";
 import { useTodos } from "@/hooks/use-todos";
 import { cn, formatISODate, priorityColor, statusColor } from "@/lib/utils";
-import { ro } from "date-fns/locale";
 import { PencilIcon, Trash } from "lucide-react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+export const dynamic = "force-dynamic";
 
 export default function TodoPage({ props }) {
   const { getOne } = useTodos({});
@@ -48,18 +50,18 @@ export default function TodoPage({ props }) {
     };
   };
 
-  if (isLoading) return <p>Loading</p>;
+  if (isLoading) return <TodoDetailsSkeleton />;
   if (error) return <p className="p-6 text-red-500">Todo not found</p>;
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8 ">
+    <main className="max-w-4xl mx-auto px-2 md:px-4 py-8 ">
       <Link
         href="/"
         className="text-blue-500 hover:underline mb-4 inline-block"
       >
         ← Back to Todos
       </Link>
-      <Card className="rounded-2xl shadow-md p-6">
+      <Card className="rounded-2xl shadow-md px-2 py-6 md:p-6 ">
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-4 mb-6">
@@ -74,7 +76,7 @@ export default function TodoPage({ props }) {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 md:space-y-4">
           <div className=" flex items-center justify-between">
             <div className="flex flex-wrap gap-2">
               {todo.priority && (
@@ -99,13 +101,13 @@ export default function TodoPage({ props }) {
                 <Badge className="bg-orange-400"> {todo.duration} MINS</Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="  hidden md:flex items-center gap-2">
               <Button
                 variant="ghost"
                 className=" cursor-pointer"
                 onClick={() => openModal("edit", todo)}
               >
-                <span className="hidden md:block">Update Todo</span>
+                <span>Update Task</span>
 
                 <PencilIcon className="size-4 text-black cursor-pointer ml-2" />
               </Button>
@@ -113,7 +115,7 @@ export default function TodoPage({ props }) {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button className=" cursor-pointer bg-red-500 hover:bg-red-600 ">
-                    <span className="hidden md:block">Delete Todo</span>
+                    <span>Delete Task</span>
 
                     <Trash className="size-4 text-white  ml-2" />
                   </Button>
@@ -125,7 +127,7 @@ export default function TodoPage({ props }) {
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete
-                      your account and remove your data from our servers.
+                      your task and remove your data from the todo.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -139,9 +141,58 @@ export default function TodoPage({ props }) {
             </div>
           </div>
 
-          <div className="flex  justify-between text-sm text-muted-foreground mt-6 w-full">
-            <span>Created on {formatISODate(todo.createdAt)}</span>
-            <span>Updated on {formatISODate(todo.updatedAt)}</span>
+          {(todo.start || todo.end) && (
+            <div className="flex  justify-between text-sm text-muted-foreground mt-6 w-full">
+              <span>
+                Task Starts {formatISODate(todo.start, "MMMM do, yyyy HH:mm")}
+              </span>
+              <span>
+                Task Ends {formatISODate(todo.end, "MMMM do, yyyy HH:mm")}
+              </span>
+            </div>
+          )}
+
+          <div className="flex  justify-between text-sm text-muted-foreground mt-10 md:mt-6 w-full">
+            <span>
+              Created {formatISODate(todo.createdAt, "MMMM do, yyyy HH:mm")}
+            </span>
+          </div>
+
+          <div className="flex justify-between md:hidden  w-full mt-10">
+            <Button
+              variant="ghost"
+              className=" cursor-pointer"
+              onClick={() => openModal("edit", todo)}
+            >
+              <span>Update Task</span>
+
+              <PencilIcon className="size-4 text-black cursor-pointer ml-2" />
+            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className=" cursor-pointer bg-red-500 hover:bg-red-600 ">
+                  <span className="">Delete Task</span>
+
+                  <Trash className="size-4 text-white  ml-2" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your task and remove your data from the todo.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete(todo.id)}>
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>
