@@ -112,12 +112,8 @@ export function TodoForm({ todo }) {
   const { create, update } = useTodos({});
 
   const onSubmit = async (values) => {
-    console.log("Form submitted with values:", values);
-    console.log("date", dateTime);
-    console.log("endDateTime", endDateTime);
     try {
       if (mode === "edit" && todo?.id) {
-        console.log("Updating todo with ID:", todo.id);
         const formattedValues = {
           ...values,
           start: dateTime ? dateTime.toISOString() : null,
@@ -125,7 +121,7 @@ export function TodoForm({ todo }) {
           duration: Number(values.duration) || 30, // Default to 30 if not provided
           owner: "Rahdeg",
         };
-        console.log("formattedValues:", formattedValues);
+
         try {
           await update.mutateAsync({ id: todo.id, data: formattedValues });
         } catch (error) {

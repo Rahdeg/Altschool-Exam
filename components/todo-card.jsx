@@ -20,8 +20,6 @@ import { useRepoModal } from "@/hooks/use-modal";
 import { useTodos } from "@/hooks/use-todos";
 import { Hint } from "./hint";
 
-// 🎨 Priority colors
-
 export const TodoCard = ({ todo }) => {
   const { openModal } = useRepoModal();
   const { remove } = useTodos({});
@@ -69,7 +67,7 @@ export const TodoCard = ({ todo }) => {
             <Badge
               className={cn(
                 statusColor[todo.status] ||
-                  "bg-muted text-muted-foreground text-xs md:text-sm"
+                  "bg-muted text-muted-foreground text-xs md:text-sm truncate"
               )}
             >
               {todo.status === "IN_PROGRESS" ? "IN PROGRESS" : todo.status}

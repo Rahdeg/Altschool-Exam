@@ -27,6 +27,7 @@ import { RefreshCcw } from "lucide-react";
 import { Hint } from "./hint";
 import TodoCardSkeleton from "./loaders/todos-skeleton";
 import { TodoCard } from "./todo-card";
+import Image from "next/image";
 export const dynamic = "force-dynamic";
 
 const ITEMS_PER_PAGE = 10;
@@ -46,7 +47,11 @@ export default function TodosPage() {
   const debouncedSearch = useDebounce(search, 300);
   const { openModal } = useRepoModal();
 
-  const { data: { todos = [], meta = {} } = {}, isLoading } = useTodos({
+  const {
+    data: { todos = [], meta = {} } = {},
+    isLoading,
+    error,
+  } = useTodos({
     search: debouncedSearch,
     status: status || "all",
     priority: priority || "all",
@@ -67,19 +72,25 @@ export default function TodosPage() {
     setStatus("");
     setPriority("");
   };
+
+  if (error) return <p className="p-6 text-red-500">Todos not found</p>;
+
   return (
     <div className="min-h-screen flex flex-col gap-y-6 w-full items-center bg-gray-100 p-6">
       {/* Filters */}
       <header className="fixed top-0 left-0 z-50 w-full bg-gray-100 px-4 py-3 shadow-xs">
         <div className="flex flex-col gap-y-3 md:flex-row gap-2 max-w-2xl w-full mx-auto py-1">
-          <Input
-            value={search || ""}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search by title"
-          />
+          <div className="flex items-center gap-x-2 w-full ">
+            <Image src="/todo.svg" width={30} height={30} alt="logo" />
+            <Input
+              value={search || ""}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search by title"
+            />
+          </div>
 
           <Select
             value={priority || ""}
