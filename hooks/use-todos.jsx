@@ -4,46 +4,57 @@ import { toast } from "sonner";
 
 const BASE_URL = "https://api.oluwasetemi.dev/tasks";
 
-export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
+export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
   const queryClient = useQueryClient();
 
-  // GET Todos (server-side pagination + client-side search/filter)
+  //  GET Todos
   const query = useQuery({
-    queryKey: ["todos", search, status, page, priority],
+    queryKey: ["todos", search, status, priority, page],
     queryFn: async () => {
-      const res = await axios.get(BASE_URL, {
-        params: { page, limit },
-      });
+      const res = await axios.get(`${BASE_URL}?all=true`);
+      let todos = res.data || [];
 
-      const mytodos = res.data?.data || [];
+      //  Filter by owner
+      todos = todos.filter((todo) => todo.owner === "Rahdeg");
 
-      // Filter todos by owner
+      //  Apply search
+      if (search) {
+        todos = todos.filter((todo) =>
+          todo.name.toLowerCase().includes(search.toLowerCase())
+        );
+      }
 
-      let todos = mytodos.filter((mytodo) => mytodo.owner === "Rahdeg");
-
-      const total = res.data?.meta?.total || todos.length;
-
-      // Client-side filters
-      todos = todos
-        .filter((todo) =>
-          todo.name.toLowerCase().includes(search?.toLowerCase() || "")
-        )
-        .filter((todo) => {
-          if (status === "all") return true;
+      // Filter by status
+      if (status !== "all") {
+        todos = todos.filter((todo) => {
           if (status === "complete") return todo.status === "DONE";
           if (status === "incomplete") return todo.status !== "DONE";
           return todo.status === status;
-        })
-        .filter((todo) => {
-          if (priority === "all") return true;
-          return todo.priority === priority;
         });
+      }
 
-      return { todos, meta: { total } };
+      //  Filter by priority
+      if (priority !== "all") {
+        todos = todos.filter((todo) => todo.priority === priority);
+      }
+
+      //  Sort by newest first (based on createdAt)
+      todos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      //  Paginate
+      const total = todos.length;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginated = todos.slice(startIndex, endIndex);
+
+      return {
+        todos: paginated,
+        meta: { total },
+      };
     },
   });
 
-  // POST (Create Todo)
+  //  CREATE
   const create = useMutation({
     mutationFn: async (data) => {
       const res = await axios.post(BASE_URL, data);
@@ -57,10 +68,9 @@ export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
     },
   });
 
-  // PATCH (Update Todo)
+  //  UPDATE
   const update = useMutation({
     mutationFn: async ({ id, data }) => {
-      console.log(id, data);
       const res = await axios.patch(`${BASE_URL}/${id}`, data);
       return res.data;
     },
@@ -73,7 +83,7 @@ export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
     },
   });
 
-  // DELETE (Remove Todo)
+  //  DELETE
   const remove = useMutation({
     mutationFn: async (id) => {
       await axios.delete(`${BASE_URL}/${id}`);
@@ -86,6 +96,7 @@ export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
     },
   });
 
+  //  GET ONE
   const getOne = (id) =>
     useQuery({
       queryKey: ["todo", id],
@@ -93,9 +104,10 @@ export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
         const res = await axios.get(`${BASE_URL}/${id}`);
         return res.data;
       },
-      enabled: !!id, // Only run if ID is provided
+      enabled: !!id,
     });
 
+  //  Return all together
   return {
     ...query,
     create,

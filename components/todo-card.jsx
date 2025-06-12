@@ -65,10 +65,11 @@ export const TodoCard = ({ todo }) => {
               {formatISODate(todo.createdAt, "MMMM do, yyyy")}
             </p>
           </div>
-          <div className="flex items-center gap-x-2">
+          <div className="flex items-center gap-x-2 text-sm">
             <Badge
               className={cn(
-                statusColor[todo.status] || "bg-muted text-muted-foreground"
+                statusColor[todo.status] ||
+                  "bg-muted text-muted-foreground text-xs md:text-sm"
               )}
             >
               {todo.status === "IN_PROGRESS" ? "IN PROGRESS" : todo.status}

@@ -67,7 +67,6 @@ export default function TodosPage() {
     setStatus("");
     setPriority("");
   };
-
   return (
     <div className="min-h-screen flex flex-col gap-y-6 w-full items-center bg-gray-100 p-6">
       {/* Filters */}
