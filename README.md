@@ -57,10 +57,8 @@ A modern, responsive Todo web application that lets users manage tasks with adva
 
 ```
 ## Screenshots
-<img <img width="934" alt="Screenshot 2025-06-12 at 9 55 53 AM" src="https://github.com/user-attachments/assets/d923150b-e550-45a7-8a29-5ff0110742d6" />
-width="<img width="839" alt="Screenshot 2025-06-12 at 9 56 13 AM" src="https://github.com/user-attachments/assets/4398d119-b512-4115-a733-80e6804f4d69" />
-812" al<img width="839" alt="Screenshot 2025-06-12 at 9 56 36 AM" src="https://github.com/user-attachments/assets/8343aed3-565a-4f0a-aaae-a6320aaf14b4" />
-t="Screenshot 2025-06-12 at 9 55 40 AM" src="https://github.com/user-attachments/assets/f591538a-2e01-4a36-ba5e-dd68b873ea69" />
+
+<img width="812" alt="Screenshot 2025-06-12 at 9 55 40 AM" src="https://github.com/user-attachments/assets/54e70b00-6dc1-4abb-8c21-d8724f8edc50" />
 
 
 ```
