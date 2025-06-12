@@ -29,6 +29,7 @@ import { PencilIcon, Trash } from "lucide-react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 export const dynamic = "force-dynamic";
 
 export default function TodoPage({ props }) {
@@ -46,6 +47,10 @@ export default function TodoPage({ props }) {
         router.push("/");
       } catch (error) {
         console.error("Failed to delete todo:", error);
+        toast.error("Failed to delete todo", {
+          description:
+            "There was an error deleting the todo. Please try again.",
+        });
       }
     };
   };
