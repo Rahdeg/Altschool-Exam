@@ -15,7 +15,12 @@ export function useTodos({ search, status, priority, page = 2, limit = 10 }) {
         params: { page, limit },
       });
 
-      let todos = res.data?.data || [];
+      const mytodos = res.data?.data || [];
+
+      // Filter todos by owner
+
+      let todos = mytodos.filter((mytodo) => mytodo.owner === "Rahdeg");
+
       const total = res.data?.meta?.total || todos.length;
 
       // Client-side filters

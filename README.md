@@ -5,11 +5,11 @@ A modern, responsive Todo web application that lets users manage tasks with adva
 ---
 
 ## 🚀 Features
-
+- 📌 Get The Todos i created Myself
 - 📝 Add, update, and delete todo items
 - 🔄 Filter todos by status: All, Done, or Incomplete and By Priority
-- 📌 Update tasks as done or revert to TODO, IN PROGRESS
-- 🔍 Search tasks by name 
+- 📌 Update tasks as done or revert to TODO, IN PROGRESS OR CANCEL
+- 🔍 Search tasks by Title 
 - ⏳ Skeleton loading states with ShadCN UI
 - 🌐 Responsive layout across all devices
 - 🧠 State management with Zustand and nuqs for query management
