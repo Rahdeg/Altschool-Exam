@@ -37,7 +37,7 @@ export const TodoCard = ({ todo }) => {
   return (
     <div className="flex items-center justify-between w-full cursor-pointer hover:bg-gray-50 transition-all duration-200 ease-in-out">
       <Link href={`/todo/${todo.id}`} className="w-full">
-        <div className="bg-white rounded-2xl rounded-r-none shadow py-4 px-2 w-full max-w-2xl flex items-center justify-between">
+        <div className="bg-white rounded-2xl rounded-r-none shadow py-4 px-3 md:px-4  w-full max-w-2xl flex items-center justify-between">
           <div>
             <div className="mb-2">
               <div className="flex gap-x-2 items-center">
