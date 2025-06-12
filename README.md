@@ -44,34 +44,33 @@ A modern, responsive Todo web application that lets users manage tasks with adva
 
 - UI State: Skeletons, modals, conditional rendering
 
-```
+---
+
 ## Architecture Notes
 - Modular folder structure for scalability
 - React Query separates server state and handles caching
 - Tailwind and ShadCN components offer a polished UI
 
-```
+---
 ## Api Documentation
 
 - [API Documentation](https://api.oluwasetemi.dev/reference) - oluwasetemi api.
 
-```
+
+---
 ## Screenshots
 
-![HomePage](./todolist.png)
-![Task Page](./taskpage.png)
-![Create Task](./create task.png)
-![Update Task](./updatetask.png)
+![HomePage](https://github.com/user-attachments/assets/54e70b00-6dc1-4abb-8c21-d8724f8edc50)
+![task page](https://github.com/user-attachments/assets/d835986a-9091-4c2b-944e-5d6b313806cc)
+![create task](https://github.com/user-attachments/assets/03a38e4c-4e8d-44d9-814b-d98f904199c6)
+![update task](https://github.com/user-attachments/assets/cf23d97b-da7d-42b0-b914-d628dccc10b5)
 
-
-
-
-```
+---
 ## 🐞 Known Issues
 - No authentication implemented
 - Limited support for recurring or timed tasks
 
-```
+---
 ## 🔮 Planned Improvements
 
 - 🔐 Add user authentication (optional guest mode)
@@ -81,7 +80,7 @@ A modern, responsive Todo web application that lets users manage tasks with adva
 - 📊 Task stats dashboard (e.g., % completed)
 
 
-```
+---
 ## 👨‍💻 Author
 
 - Adegbite Raheem
