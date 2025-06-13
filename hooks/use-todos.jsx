@@ -14,8 +14,8 @@ export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
       const res = await axios.get(`${BASE_URL}?all=true`);
       let todos = res.data || [];
 
-      //  Filter by owner
-      todos = todos.filter((todo) => todo.owner === "Rahdeg");
+      // //  Filter by owner
+      // todos = todos.filter((todo) => todo.owner === "Rahdeg");
 
       //  Apply search
       if (search) {
