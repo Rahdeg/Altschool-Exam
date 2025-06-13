@@ -60,12 +60,27 @@ export default function TodoPage({ props }) {
 
   return (
     <main className="max-w-4xl mx-auto px-2 md:px-4 py-8 ">
-      <Link
-        href="/"
-        className="text-blue-500 hover:underline mb-4 inline-block"
-      >
-        ← Back to Todos
-      </Link>
+      <div className="flex items-center justify-between ">
+        <Link
+          href="/"
+          className="text-blue-500 hover:underline mb-4 inline-block"
+        >
+          ← Back to Todos
+        </Link>
+        <Link
+          href="/testerror"
+          className="text-red-500 hover:underline mb-4 inline-block"
+        >
+          Trigger error
+        </Link>
+        <Link
+          href="/gear"
+          className="text-blue-500 hover:underline mb-4 inline-block"
+        >
+          404 Page
+        </Link>
+      </div>
+
       <Card className="rounded-2xl shadow-md px-2 py-6 md:p-6 ">
         <CardHeader>
           <CardTitle>
