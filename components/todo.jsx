@@ -187,10 +187,10 @@ export default function TodosPage() {
         </>
       )}
       {/* Pagination */}
-      <footer>
+      <footer className="w-full max-w-xl md:max-w-3xl mx-auto mt-6 px-4 sm:px-6">
         {todos?.length > 0 && (page > 1 || showPagination) && (
-          <Pagination className="mt-6">
-            <PaginationContent>
+          <Pagination className="mt-6 overflow-x-auto">
+            <PaginationContent className="flex flex-wrap justify-center gap-2 sm:gap-4">
               <PaginationItem>
                 <PaginationPrevious
                   href="#"
@@ -202,11 +202,9 @@ export default function TodosPage() {
                 />
               </PaginationItem>
 
-              {/* Show max 10 pages window */}
               {Array.from({ length: Math.min(10, totalPages) }).map((_, i) => {
                 let start = Math.max(1, page - 5);
                 let end = Math.min(totalPages, start + 9);
-
                 if (end - start < 9) start = Math.max(1, end - 9);
                 const pageNum = start + i;
 
