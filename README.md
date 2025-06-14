@@ -64,7 +64,8 @@ A modern, responsive Todo web application that lets users manage tasks with adva
 ![task page](https://github.com/user-attachments/assets/d835986a-9091-4c2b-944e-5d6b313806cc)
 ![create task](https://github.com/user-attachments/assets/03a38e4c-4e8d-44d9-814b-d98f904199c6)
 ![update task](https://github.com/user-attachments/assets/cf23d97b-da7d-42b0-b914-d628dccc10b5)
-![my app](https://github.com/user-attachments/assets/bd2bb906-99cd-4765-9965-97d75af91c59)
+▶️ [Watch Demo Video](https://github.com/user-attachments/assets/bd2bb906-99cd-4765-9965-97d75af91c59)
+
 
 
 
