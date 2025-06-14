@@ -7,7 +7,7 @@ const BASE_URL = "https://api.oluwasetemi.dev/tasks";
 export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
   const queryClient = useQueryClient();
 
-  // ✅ GET Todos (server-side filtering & pagination)
+  //  GET Todos (server-side filtering & pagination)
   const query = useQuery({
     queryKey: ["todos", search, status, priority, page],
     queryFn: async () => {
@@ -34,7 +34,7 @@ export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
     },
   });
 
-  // ✅ CREATE
+  //  CREATE
   const create = useMutation({
     mutationFn: async (data) => {
       const res = await axios.post(BASE_URL, data);
@@ -48,7 +48,7 @@ export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
     },
   });
 
-  // ✅ UPDATE
+  //  UPDATE
   const update = useMutation({
     mutationFn: async ({ id, data }) => {
       const res = await axios.patch(`${BASE_URL}/${id}`, data);
@@ -63,7 +63,7 @@ export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
     },
   });
 
-  // ✅ DELETE
+  // DELETE
   const remove = useMutation({
     mutationFn: async (id) => {
       await axios.delete(`${BASE_URL}/${id}`);
@@ -76,7 +76,7 @@ export function useTodos({ search, status, priority, page = 1, limit = 10 }) {
     },
   });
 
-  // ✅ GET ONE
+  // GET ONE
   const getOne = (id) =>
     useQuery({
       queryKey: ["todo", id],
