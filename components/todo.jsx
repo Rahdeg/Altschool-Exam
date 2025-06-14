@@ -34,9 +34,9 @@ const ITEMS_PER_PAGE = 10;
 
 export default function TodosPage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" });
-  const [status, setStatus] = useQueryState("status", { defaultValue: "" });
+  const [status, setStatus] = useQueryState("status", { defaultValue: "all" });
   const [priority, setPriority] = useQueryState("priority", {
-    defaultValue: "",
+    defaultValue: "all",
   });
   const [page, setPage] = useQueryState("page", {
     defaultValue: 1,
@@ -71,6 +71,7 @@ export default function TodosPage() {
     setSearch("");
     setStatus("");
     setPriority("");
+    setPage(1);
   };
 
   if (error) return <p className="p-6 text-red-500">Todos not found</p>;
@@ -122,10 +123,9 @@ export default function TodosPage() {
               </SelectTrigger>
               <SelectContent className="w-full">
                 <SelectItem value="all">Status</SelectItem>
-                <SelectItem value="complete">COMPLETE</SelectItem>
-                <SelectItem value="incomplete">INCOMPLETE</SelectItem>
                 <SelectItem value="TODO">TODO</SelectItem>
                 <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
+                <SelectItem value="DONE">DONE</SelectItem>
                 <SelectItem value="CANCELLED">CANCELLED</SelectItem>
               </SelectContent>
             </Select>

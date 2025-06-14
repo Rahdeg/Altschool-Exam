@@ -1,6 +1,13 @@
 import React, { Suspense } from "react";
 import TodoPage from "./todo-client";
 
+export async function generateMetadata() {
+  return {
+    title: "Todo Page",
+    description: "More details about todo",
+  };
+}
+
 const Page = async ({ params }) => {
   const { id } = await params;
   return (
