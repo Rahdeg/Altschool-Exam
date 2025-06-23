@@ -74,7 +74,88 @@ export default function TodosPage() {
     setPage(1);
   };
 
-  if (error) return <p className="p-6 text-red-500">Todos not found</p>;
+  if (error)
+    return (
+      <div className="min-h-screen flex flex-col gap-y-6 w-full items-center bg-gray-100 p-6">
+        <header className="fixed top-0 left-0 z-50 w-full bg-gray-100 px-4 py-3 shadow-xs">
+          <div className="flex flex-col gap-y-3 md:flex-row gap-2 max-w-2xl w-full mx-auto py-1">
+            <div className="flex items-center gap-x-2 w-full ">
+              <Image src="/todo.svg" width={30} height={30} alt="logo" />
+              <Input
+                value={search || ""}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search by title"
+              />
+            </div>
+
+            <Select
+              value={priority || ""}
+              onValueChange={(val) => {
+                setPriority(val);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-fit">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent className="w-full">
+                <SelectItem value="all">Priority</SelectItem>
+                <SelectItem value="LOW">LOW</SelectItem>
+                <SelectItem value="MEDIUM">MEDIUM</SelectItem>
+                <SelectItem value="HIGH">HIGH</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className=" flex">
+              <Select
+                value={status || ""}
+                onValueChange={(val) => {
+                  setStatus(val);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full md:w-fit">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  <SelectItem value="all">Status</SelectItem>
+                  <SelectItem value="TODO">TODO</SelectItem>
+                  <SelectItem value="IN_PROGRESS">IN PROGRESS</SelectItem>
+                  <SelectItem value="DONE">DONE</SelectItem>
+                  <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                </SelectContent>
+              </Select>
+              <Hint label="Clear filters" side="top" align="center">
+                <Button
+                  variant="outline"
+                  className="cursor-pointer ml-2"
+                  onClick={() => clearFilters()}
+                >
+                  <RefreshCcw />
+                </Button>
+              </Hint>
+            </div>
+
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer"
+              onClick={() => openModal("create")}
+            >
+              Create Task
+              <span className="ml-2">+</span>
+            </Button>
+          </div>
+        </header>
+
+        <div className="text-red-500 text-center pt-[200px] md:pt-[60px]">
+          <p>{error.message}</p>
+          <span>
+            An error occurred while fetching tasks. Please try again later.
+          </span>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen flex flex-col gap-y-6 w-full items-center bg-gray-100 p-6">
