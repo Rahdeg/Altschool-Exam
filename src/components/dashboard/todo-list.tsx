@@ -8,15 +8,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     MoreHorizontal,
     MessageSquare,
-    Heart,
     Calendar,
-    User,
     Clock
 } from "lucide-react";
 import { statusColor, priorityColor } from "@/lib/utils";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Doc } from "../../../convex/_generated/dataModel";
+import { Doc, Id } from "../../../convex/_generated/dataModel";
+import { CommentSheet } from "./comment-sheet";
+import { TodoReactions } from "./todo-reactions";
 
 type Todo = Doc<"todos"> & {
     user: {
@@ -25,22 +25,69 @@ type Todo = Doc<"todos"> & {
         email: string;
         image?: string;
     };
+    commentCount?: number;
+    reactionCount?: number;
 };
 
-export function TodoList() {
-    const [filter, setFilter] = useState<"all" | "my" | "public">("all");
+interface TodoListProps {
+    filter: "all" | "my" | "public";
+}
+
+export function TodoList({ filter }: TodoListProps) {
+    const [selectedTodoId, setSelectedTodoId] = useState<Id<"todos"> | null>(null);
 
     const myTodos = useQuery(api.todos.getMyTodos, {});
     const publicTodos = useQuery(api.todos.getPublicTodos, {});
+    const toggleReaction = useMutation(api.reactions.toggle);
+
+    const handleReactionToggle = async (todoId: Id<"todos">, emoji: string) => {
+        try {
+            await toggleReaction({
+                emoji,
+                todoId,
+            });
+        } catch (error) {
+            console.error("Failed to toggle reaction:", error);
+        }
+    };
 
     const filteredTodos = (() => {
         if (filter === "my") return myTodos || [];
         if (filter === "public") return publicTodos || [];
-        return [...(myTodos || []), ...(publicTodos || [])];
+
+        // Combine and deduplicate tasks for "all" view
+        const myTodosList = myTodos || [];
+        const publicTodosList = publicTodos || [];
+
+        // Create a Set of task IDs to track duplicates
+        const seenIds = new Set<string>();
+        const allTodos: Todo[] = [];
+
+        // Add all user's tasks first
+        for (const todo of myTodosList) {
+            if (!seenIds.has(todo._id) && todo.user._id) {
+                seenIds.add(todo._id);
+                allTodos.push(todo as Todo);
+            }
+        }
+
+        // Add public tasks that aren't already included
+        for (const todo of publicTodosList) {
+            if (!seenIds.has(todo._id) && todo.user._id) {
+                seenIds.add(todo._id);
+                allTodos.push(todo as Todo);
+            }
+        }
+
+        return allTodos;
     })();
 
     const formatDate = (timestamp: number) => {
-        return new Date(timestamp).toLocaleDateString();
+        return new Date(timestamp).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+        });
     };
 
     const getTimeAgo = (timestamp: number) => {
@@ -102,95 +149,63 @@ export function TodoList() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* Filter Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-                <button
-                    onClick={() => setFilter("all")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === "all"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                        }`}
-                >
-                    All Tasks
-                </button>
-                <button
-                    onClick={() => setFilter("my")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === "my"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                        }`}
-                >
-                    My Tasks
-                </button>
-                <button
-                    onClick={() => setFilter("public")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === "public"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                        }`}
-                >
-                    Public Tasks
-                </button>
-            </div>
-
+        <div className="space-y-4">
             {/* Todo Cards */}
-            <div className="space-y-4">
-                {filteredTodos.map((todo) => (
-                    <Card key={todo._id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                        <CardTitle className="text-lg">{todo.title}</CardTitle>
-                                        {!todo.isPublic && (
-                                            <Badge variant="outline" className="text-xs">
-                                                Private
-                                            </Badge>
-                                        )}
-                                    </div>
-                                    <CardDescription className="text-sm text-gray-600">
-                                        {todo.description}
-                                    </CardDescription>
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className="pt-0">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <Badge
-                                        className={statusColor[todo.status.toLowerCase()]}
-                                    >
-                                        {todo.status.replace("_", " ")}
-                                    </Badge>
-                                    <Badge
-                                        variant="outline"
-                                        className={priorityColor[todo.priority.toLowerCase()]}
-                                    >
-                                        {todo.priority}
-                                    </Badge>
-                                    {todo.tags.map((tag) => (
-                                        <Badge key={tag} variant="secondary" className="text-xs">
-                                            {tag}
+            {filteredTodos.map((todo) => (
+                <Card key={todo._id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <CardTitle className="text-lg">{todo.title}</CardTitle>
+                                    {!todo.isPublic && (
+                                        <Badge variant="outline" className="text-xs">
+                                            Private
                                         </Badge>
-                                    ))}
+                                    )}
                                 </div>
+                                <CardDescription className="text-sm text-gray-600">
+                                    {todo.description}
+                                </CardDescription>
                             </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </CardHeader>
 
-                            <div className="flex items-center justify-between text-sm text-gray-500">
-                                <div className="flex items-center space-x-4">
+                    <CardContent className="pt-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            <Badge
+                                className={statusColor[todo.status.toLowerCase()]}
+                            >
+                                {todo.status.replace("_", " ")}
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                className={priorityColor[todo.priority.toLowerCase()]}
+                            >
+                                {todo.priority}
+                            </Badge>
+                            {todo.tags?.map((tag) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                    {tag}
+                                </Badge>
+                            ))}
+                        </div>
+
+                        <div className="space-y-3">
+                            {/* User info and metadata */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm text-gray-500">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                     <div className="flex items-center space-x-1">
                                         <Avatar className="h-5 w-5">
-                                            <AvatarImage src={todo.user.image} alt={todo.user.name} />
+                                            <AvatarImage src={todo.user.image} alt={todo.user.name || "User"} />
                                             <AvatarFallback className="text-xs">
-                                                {todo.user.name.charAt(0)}
+                                                {todo.user.name?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <span>{todo.user.name}</span>
+                                        <span>{todo.user.name || "Unknown User"}</span>
                                     </div>
 
                                     {todo.dueDate && (
@@ -205,22 +220,28 @@ export function TodoList() {
                                         <span>{getTimeAgo(todo.createdAt)}</span>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex items-center space-x-1">
-                                        <MessageSquare className="w-4 h-4" />
-                                        <span>0</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1">
-                                        <Heart className="w-4 h-4" />
-                                        <span>0</span>
-                                    </div>
-                                </div>
                             </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+
+                            {/* Reactions and Comments Section */}
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                                <TodoReactions
+                                    todoId={todo._id}
+                                    onReactionToggle={(emoji) => handleReactionToggle(todo._id, emoji)}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-gray-500 hover:text-gray-700"
+                                    onClick={() => setSelectedTodoId(todo._id)}
+                                >
+                                    <MessageSquare className="w-4 h-4" />
+                                    <span className="ml-1">{todo.commentCount || 0}</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
 
             {filteredTodos.length === 0 && (
                 <div className="text-center py-12">
@@ -239,6 +260,15 @@ export function TodoList() {
                         }
                     </p>
                 </div>
+            )}
+
+            {/* Comment Sheet */}
+            {selectedTodoId && (
+                <CommentSheet
+                    todoId={selectedTodoId}
+                    isOpen={!!selectedTodoId}
+                    onClose={() => setSelectedTodoId(null)}
+                />
             )}
         </div>
     );

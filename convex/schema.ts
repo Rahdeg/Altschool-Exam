@@ -120,6 +120,50 @@ const schema = defineSchema({
     .index("by_conversation", ["conversationId"])
     .index("by_user", ["userId"])
     .index("by_conversation_user", ["conversationId", "userId"]),
+
+  // Notifications table
+  notifications: defineTable({
+    type: v.union(
+      v.literal("TASK_COMMENT"),
+      v.literal("TASK_STATUS_CHANGE"),
+      v.literal("TASK_ASSIGNED"),
+      v.literal("TASK_DUE_SOON"),
+      v.literal("COMMENT_REPLY"),
+      v.literal("REACTION_ADDED"),
+      v.literal("NEW_MESSAGE"),
+      v.literal("TASK_MENTION")
+    ),
+    title: v.string(),
+    message: v.string(),
+    userId: v.id("users"), // recipient
+    actorId: v.id("users"), // who triggered the notification
+    relatedId: v.optional(
+      v.union(v.id("todos"), v.id("comments"), v.id("messages"))
+    ),
+    isRead: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_read", ["userId", "isRead"])
+    .index("by_type", ["type"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_user_created", ["userId", "createdAt"]),
+
+  // Notification preferences table
+  notificationPreferences: defineTable({
+    userId: v.id("users"),
+    taskComments: v.boolean(),
+    taskStatusChanges: v.boolean(),
+    taskAssignments: v.boolean(),
+    taskDueReminders: v.boolean(),
+    commentReplies: v.boolean(),
+    reactions: v.boolean(),
+    directMessages: v.boolean(),
+    mentions: v.boolean(),
+    emailNotifications: v.boolean(),
+    pushNotifications: v.boolean(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
 });
 
 export default schema;

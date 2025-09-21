@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,16 +23,16 @@ export function LandingPage() {
     const { isAuthenticated } = useConvexAuth();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-background via-card to-muted">
             {/* Navigation */}
-            <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+            <nav className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                                <CheckCircle className="w-5 h-5 text-white" />
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                                <Image src="/todo.svg" alt="TaskyFlow" className="w-6 h-6" width={24} height={24} />
                             </div>
-                            <span className="text-xl font-bold text-gray-900">TaskyFlow</span>
+                            <span className="text-xl font-bold text-foreground">TaskyFlow</span>
                         </div>
                         <div className="flex items-center space-x-4">
                             {isAuthenticated ? (
@@ -39,10 +40,10 @@ export function LandingPage() {
                             ) : (
                                 <>
                                     <Link href="/auth">
-                                        <Button variant="ghost" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100">Sign In</Button>
+                                        <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-accent">Sign In</Button>
                                     </Link>
                                     <Link href="/auth">
-                                        <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
+                                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Get Started</Button>
                                     </Link>
                                 </>
                             )}
@@ -57,23 +58,23 @@ export function LandingPage() {
                     <Badge variant="secondary" className="mb-6">
                         🚀 New: Real-time collaboration features
                     </Badge>
-                    <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+                    <h1 className="text-4xl sm:text-6xl font-bold text-foreground mb-6">
                         Organize Your Life with
-                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
                             {" "}Smart Tasks
                         </span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
                         The ultimate collaborative task management platform. Create, organize, and collaborate on tasks with real-time updates, comments, and direct messaging.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-                            <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                            <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
                                 {isAuthenticated ? "Go to Dashboard" : "Start Free Trial"}
                                 <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
-                        <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 border-gray-800  bg-gray-800 text-white font-semibold">
+                        <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 border-foreground bg-foreground text-background font-semibold hover:bg-foreground/90">
                             Watch Demo
                         </Button>
                     </div>
@@ -81,7 +82,7 @@ export function LandingPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-gray-100">
+            <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-muted to-accent">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -263,8 +264,8 @@ export function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div>
                             <div className="flex items-center space-x-2 mb-4">
-                                <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                                    <CheckCircle className="w-4 h-4 text-white" />
+                                <div className="w-6 h-6 rounded-lg flex items-center justify-center">
+                                    <Image src="/todo.svg" alt="TaskyFlow" className="w-5 h-5" width={20} height={20} />
                                 </div>
                                 <span className="text-lg font-bold text-gray-900">TaskyFlow</span>
                             </div>

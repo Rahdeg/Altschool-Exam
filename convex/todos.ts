@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { api } from "./_generated/api";
 
 // Create a new todo
 export const create = mutation({
@@ -61,10 +62,23 @@ export const getMyTodos = query({
 
     const todos = await query.order("desc").collect();
 
-    // Populate user information
+    // Populate user information and counts
     const todosWithUsers = await Promise.all(
       todos.map(async (todo) => {
         const user = await ctx.db.get(todo.userId);
+
+        // Get comment count
+        const comments = await ctx.db
+          .query("comments")
+          .withIndex("by_todo", (q) => q.eq("todoId", todo._id))
+          .collect();
+
+        // Get reaction count
+        const reactions = await ctx.db
+          .query("reactions")
+          .withIndex("by_todo", (q) => q.eq("todoId", todo._id))
+          .collect();
+
         return {
           ...todo,
           user: {
@@ -73,6 +87,8 @@ export const getMyTodos = query({
             email: user?.email,
             image: user?.image,
           },
+          commentCount: comments.length,
+          reactionCount: reactions.length,
         };
       })
     );
@@ -107,10 +123,23 @@ export const getPublicTodos = query({
 
     const todos = await query.order("desc").collect();
 
-    // Populate user information
+    // Populate user information and counts
     const todosWithUsers = await Promise.all(
       todos.map(async (todo) => {
         const user = await ctx.db.get(todo.userId);
+
+        // Get comment count
+        const comments = await ctx.db
+          .query("comments")
+          .withIndex("by_todo", (q) => q.eq("todoId", todo._id))
+          .collect();
+
+        // Get reaction count
+        const reactions = await ctx.db
+          .query("reactions")
+          .withIndex("by_todo", (q) => q.eq("todoId", todo._id))
+          .collect();
+
         return {
           ...todo,
           user: {
@@ -119,6 +148,8 @@ export const getPublicTodos = query({
             email: user?.email,
             image: user?.image,
           },
+          commentCount: comments.length,
+          reactionCount: reactions.length,
         };
       })
     );
@@ -128,6 +159,40 @@ export const getPublicTodos = query({
 });
 
 // Get a single todo by ID
+export const get = query({
+  args: { id: v.id("todos") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const todo = await ctx.db.get(args.id);
+    if (!todo) {
+      throw new Error("Todo not found");
+    }
+
+    // Check if user can access this todo
+    if (!todo.isPublic && todo.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Populate user information
+    const user = await ctx.db.get(todo.userId);
+
+    return {
+      ...todo,
+      user: {
+        _id: user?._id,
+        name: user?.name,
+        email: user?.email,
+        image: user?.image,
+      },
+    };
+  },
+});
+
+// Get a single todo by ID (legacy)
 export const getById = query({
   args: { id: v.id("todos") },
   handler: async (ctx, args) => {
@@ -199,10 +264,26 @@ export const update = mutation({
 
     const { id, ...updateData } = args;
 
+    // Check if status is being changed
+    const statusChanged =
+      updateData.status && updateData.status !== todo.status;
+
     await ctx.db.patch(args.id, {
       ...updateData,
       updatedAt: Date.now(),
     });
+
+    // Create notification for status change if it's a public task
+    if (statusChanged && todo.isPublic) {
+      await ctx.runMutation(api.notifications.create, {
+        type: "TASK_STATUS_CHANGE",
+        title: "Task status updated",
+        message: `"${todo.title}" status changed to ${updateData.status?.replace("_", " ")}`,
+        userId: todo.userId,
+        actorId: userId,
+        relatedId: args.id,
+      });
+    }
 
     return args.id;
   },

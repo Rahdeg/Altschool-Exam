@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc, Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Type for comment with user information
 type CommentWithUser = Doc<"comments"> & {
@@ -47,6 +48,23 @@ export const create = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Create notification for task comment
+    if (!args.parentCommentId) {
+      // This is a top-level comment on a task
+      await ctx.runMutation(api.notifications.createTaskCommentNotification, {
+        todoId: args.todoId,
+        commentId,
+        commenterId: userId,
+      });
+    } else {
+      // This is a reply to a comment
+      await ctx.runMutation(api.notifications.createCommentReplyNotification, {
+        parentCommentId: args.parentCommentId,
+        replyCommentId: commentId,
+        replierId: userId,
+      });
+    }
 
     return commentId;
   },

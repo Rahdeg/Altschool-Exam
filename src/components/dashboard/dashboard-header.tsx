@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,15 +11,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Settings, LogOut, User } from "lucide-react";
+import { Settings, LogOut, User, MessageSquare } from "lucide-react";
 import Link from "next/link";
-import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { NotificationBell } from "./notification-bell";
 
-export function DashboardHeader() {
-    const { isAuthenticated } = useConvexAuth();
+interface DashboardHeaderProps {
+    onChatClick?: () => void;
+}
+
+export function DashboardHeader({ onChatClick }: DashboardHeaderProps) {
     const currentUser = useQuery(api.users.getCurrentUser);
     const { signOut } = useAuthActions();
 
@@ -31,35 +35,31 @@ export function DashboardHeader() {
     };
 
     return (
-        <header className="bg-white border-b">
-            <div className="px-6 py-4">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
+            <div className="px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 sm:space-x-4">
                         <Link href="/dashboard" className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                                <Image src="/todo.svg" alt="TaskyFlow" className="w-6 h-6" width={24} height={24} />
                             </div>
-                            <span className="text-xl font-bold text-gray-900">TaskyFlow</span>
+                            <span className="text-lg sm:text-xl font-bold text-gray-900">TaskyFlow</span>
                         </Link>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                        {/* Filter Options */}
-                        <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm">
-                                My Tasks
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                                All Tasks
-                            </Button>
-                        </div>
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        {/* Mobile Chat Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="lg:hidden"
+                            onClick={onChatClick}
+                        >
+                            <MessageSquare className="w-5 h-5" />
+                        </Button>
 
                         {/* Notifications */}
-                        <Button variant="ghost" size="icon">
-                            <Bell className="w-5 h-5" />
-                        </Button>
+                        <NotificationBell />
 
                         {/* User Menu */}
                         <DropdownMenu>

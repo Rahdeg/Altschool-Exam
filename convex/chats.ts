@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc, Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Create or get existing conversation between two users
 export const createOrGetConversation = mutation({
@@ -223,6 +224,13 @@ export const sendMessage = mutation({
     await ctx.db.patch(args.conversationId, {
       lastMessageAt: Date.now(),
       updatedAt: Date.now(),
+    });
+
+    // Create notification for new message
+    await ctx.runMutation(api.notifications.createMessageNotification, {
+      conversationId: args.conversationId,
+      messageId,
+      senderId: userId,
     });
 
     return messageId;

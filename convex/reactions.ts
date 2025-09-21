@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc, Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Type for reaction with user information
 type ReactionWithUser = Doc<"reactions"> & {
@@ -67,6 +68,15 @@ export const toggle = mutation({
         userId,
         createdAt: Date.now(),
       });
+
+      // Create notification for reaction
+      await ctx.runMutation(api.notifications.createReactionNotification, {
+        todoId: args.todoId,
+        commentId: args.commentId,
+        reactorId: userId,
+        emoji: args.emoji,
+      });
+
       return { action: "added", reactionId };
     }
   },

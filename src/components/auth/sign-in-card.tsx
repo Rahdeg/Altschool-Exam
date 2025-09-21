@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 export function SignInCard() {
@@ -13,7 +12,6 @@ export function SignInCard() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const { isAuthenticated } = useConvexAuth();
     const { signIn } = useAuthActions();
 
     const handleEmailSignIn = async (e: React.FormEvent) => {

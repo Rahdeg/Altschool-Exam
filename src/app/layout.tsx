@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: {
-    icon: "/convex.svg",
+    icon: "/todo.svg",
   },
 };
 
