@@ -26,19 +26,19 @@ export function ReactionButton({ emoji, count, users, onToggle }: ReactionButton
                 <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-6 px-2 gap-1 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors ${isHovered ? 'bg-gray-50 border-gray-300' : 'bg-white'
+                    className={`h-6 px-2 gap-1 rounded-full border border-border hover:border-border/80 hover:bg-muted transition-colors ${isHovered ? 'bg-muted border-border/80' : 'bg-background'
                         }`}
                     onClick={onToggle}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
                     <span className="text-xs">{emoji}</span>
-                    <span className="text-xs text-gray-600 font-medium">{count}</span>
+                    <span className="text-xs text-muted-foreground font-medium">{count}</span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3" align="start">
                 <div className="space-y-3">
-                    <div className="text-sm font-medium text-gray-700">
+                    <div className="text-sm font-medium text-foreground">
                         {count} {count === 1 ? 'reaction' : 'reactions'}
                     </div>
                     <div className="space-y-2">
@@ -50,7 +50,7 @@ export function ReactionButton({ emoji, count, users, onToggle }: ReactionButton
                                         {user.name?.charAt(0) || "U"}
                                     </AvatarFallback>
                                 </Avatar>
-                                <span className="text-gray-700">
+                                <span className="text-foreground">
                                     {user.name || "Unknown User"}
                                 </span>
                             </div>

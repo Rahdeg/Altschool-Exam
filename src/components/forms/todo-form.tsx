@@ -102,7 +102,7 @@ export function TodoForm({ todo, onSuccess }: TodoFormProps) {
                             disabled={isLoading}
                         />
                         {form.formState.errors.title && (
-                            <p className="text-sm text-red-600">{form.formState.errors.title.message}</p>
+                            <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
                         )}
                     </div>
 
@@ -176,7 +176,7 @@ export function TodoForm({ todo, onSuccess }: TodoFormProps) {
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start" side="bottom" sideOffset={8}>
-                                <div className="bg-white rounded-lg border shadow-lg">
+                                <div className="bg-popover rounded-lg border border-border shadow-lg">
                                     <Calendar
                                         mode="single"
                                         selected={form.watch("dueDate") ? new Date(form.watch("dueDate")!) : undefined}

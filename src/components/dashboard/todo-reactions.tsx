@@ -17,8 +17,8 @@ export function TodoReactions({ todoId, onReactionToggle }: TodoReactionsProps) 
     if (!reactions) {
         return (
             <div className="flex items-center gap-2">
-                <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-6 w-20 bg-muted-foreground/10 rounded animate-pulse"></div>
+                <div className="h-6 w-6 bg-muted-foreground/10 rounded animate-pulse"></div>
             </div>
         );
     }

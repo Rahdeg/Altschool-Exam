@@ -20,6 +20,7 @@ export const toggle = mutation({
     emoji: v.string(),
     todoId: v.optional(v.id("todos")),
     commentId: v.optional(v.id("comments")),
+    messageId: v.optional(v.id("messages")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -27,13 +28,14 @@ export const toggle = mutation({
       throw new Error("Unauthorized");
     }
 
-    // Validate that either todoId or commentId is provided, but not both
-    if (!args.todoId && !args.commentId) {
-      throw new Error("Either todoId or commentId must be provided");
-    }
-
-    if (args.todoId && args.commentId) {
-      throw new Error("Cannot react to both todo and comment simultaneously");
+    // Validate that exactly one of todoId, commentId, or messageId is provided
+    const providedIds = [args.todoId, args.commentId, args.messageId].filter(
+      Boolean
+    );
+    if (providedIds.length !== 1) {
+      throw new Error(
+        "Exactly one of todoId, commentId, or messageId must be provided"
+      );
     }
 
     // Check if user already reacted with this emoji
@@ -51,6 +53,12 @@ export const toggle = mutation({
             q.eq(q.field("commentId"), args.commentId)
           );
         }
+        if (args.messageId) {
+          condition = q.and(
+            condition,
+            q.eq(q.field("messageId"), args.messageId)
+          );
+        }
         return condition;
       })
       .unique();
@@ -65,17 +73,20 @@ export const toggle = mutation({
         emoji: args.emoji,
         todoId: args.todoId,
         commentId: args.commentId,
+        messageId: args.messageId,
         userId,
         createdAt: Date.now(),
       });
 
-      // Create notification for reaction
-      await ctx.runMutation(api.notifications.createReactionNotification, {
-        todoId: args.todoId,
-        commentId: args.commentId,
-        reactorId: userId,
-        emoji: args.emoji,
-      });
+      // Create notification for reaction (only for todos and comments, not messages)
+      if (args.todoId || args.commentId) {
+        await ctx.runMutation(api.notifications.createReactionNotification, {
+          todoId: args.todoId,
+          commentId: args.commentId,
+          reactorId: userId,
+          emoji: args.emoji,
+        });
+      }
 
       return { action: "added", reactionId };
     }
@@ -165,5 +176,66 @@ export const getByComment = query({
       count: users.length,
       users,
     }));
+  },
+});
+
+// Add a reaction to a message
+export const addReaction = mutation({
+  args: {
+    emoji: v.string(),
+    messageId: v.id("messages"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const reactionId = await ctx.db.insert("reactions", {
+      emoji: args.emoji,
+      messageId: args.messageId,
+      userId: args.userId,
+      createdAt: Date.now(),
+    });
+
+    return reactionId;
+  },
+});
+
+// Remove a reaction
+export const removeReaction = mutation({
+  args: { reactionId: v.id("reactions") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.reactionId);
+  },
+});
+
+// Get all reactions for a message (for the message reactions component)
+export const getReactions = query({
+  args: { messageId: v.id("messages") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const reactions = await ctx.db
+      .query("reactions")
+      .withIndex("by_message", (q) => q.eq("messageId", args.messageId))
+      .collect();
+
+    // Get user info for each reaction
+    const reactionsWithUsers = await Promise.all(
+      reactions.map(async (reaction) => {
+        const user = await ctx.db.get(reaction.userId);
+        return {
+          ...reaction,
+          user: {
+            _id: user?._id,
+            name: user?.name,
+            email: user?.email,
+            image: user?.image,
+          },
+        };
+      })
+    );
+
+    return reactionsWithUsers;
   },
 });

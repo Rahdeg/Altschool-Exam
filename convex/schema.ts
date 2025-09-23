@@ -49,14 +49,17 @@ const schema = defineSchema({
     emoji: v.string(),
     todoId: v.optional(v.id("todos")),
     commentId: v.optional(v.id("comments")),
+    messageId: v.optional(v.id("messages")),
     userId: v.id("users"),
     createdAt: v.number(),
   })
     .index("by_todo", ["todoId"])
     .index("by_comment", ["commentId"])
+    .index("by_message", ["messageId"])
     .index("by_user", ["userId"])
     .index("by_todo_emoji", ["todoId", "emoji"])
-    .index("by_comment_emoji", ["commentId", "emoji"]),
+    .index("by_comment_emoji", ["commentId", "emoji"])
+    .index("by_message_emoji", ["messageId", "emoji"]),
 
   // Conversations table for DM chat
   conversations: defineTable({

@@ -125,36 +125,36 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     if (!currentConversation || !currentUser) {
         return (
             <div className="h-full flex items-center justify-center">
-                <p className="text-gray-500">Loading conversation...</p>
+                <p className="text-muted-foreground">Loading conversation...</p>
             </div>
         );
     }
 
     return (
-        <div className="h-full flex flex-col bg-white">
+        <div className="h-full flex flex-col bg-card">
             {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200 bg-white flex items-center space-x-3">
+            <div className="p-4 border-b border-border bg-card flex items-center space-x-3">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={onBack}
-                    className="lg:hidden hover:bg-gray-100 rounded-full"
+                    className="lg:hidden rounded-full"
                 >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    <ArrowLeft className="w-5 h-5 text-muted-foreground" />
                 </Button>
 
                 <div className="relative">
-                    <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
+                    <Avatar className="h-10 w-10 ring-2 ring-background shadow-sm">
                         <AvatarImage src={currentConversation.otherUser?.image} alt={currentConversation.otherUser?.name || "User"} />
                         <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
                             {currentConversation.otherUser?.name?.charAt(0)?.toUpperCase() || "U"}
                         </AvatarFallback>
                     </Avatar>
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor("online")} shadow-sm`} />
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${getStatusColor("online")} shadow-sm`} />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">
+                    <h3 className="text-sm font-semibold text-card-foreground truncate">
                         {currentConversation.otherUser?.name || "Unknown User"}
                     </h3>
                     <p className="text-xs text-green-600 font-medium">
@@ -164,7 +164,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50">
+            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-muted/30">
                 {messages && messages.length > 0 ? (
                     messages.map((message) => {
                         const isOwnMessage = message.senderId === currentUser._id;
@@ -176,7 +176,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                 className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} space-x-3`}
                             >
                                 {showAvatar && (
-                                    <Avatar className="h-8 w-8 mt-1 ring-2 ring-white shadow-sm">
+                                    <Avatar className="h-8 w-8 mt-1 ring-2 ring-background shadow-sm">
                                         <AvatarImage src={message.sender?.image} alt={message.sender?.name || "User"} />
                                         <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold text-xs">
                                             {message.sender?.name?.charAt(0)?.toUpperCase() || "U"}
@@ -187,13 +187,13 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                 <div className={`max-w-xs ${showAvatar ? "ml-0" : "mr-0"}`}>
                                     <div
                                         className={`rounded-2xl px-4 py-3 shadow-sm ${isOwnMessage
-                                            ? "bg-blue-500 text-white"
-                                            : "bg-white text-gray-900 border border-gray-200"
+                                            ? "bg-primary text-primary-foreground"
+                                            : "bg-card text-card-foreground border border-border"
                                             }`}
                                     >
                                         <p className="text-sm leading-relaxed">{message.body}</p>
                                     </div>
-                                    <p className={`text-xs mt-1 px-1 ${isOwnMessage ? "text-right text-gray-500" : "text-left text-gray-500"
+                                    <p className={`text-xs mt-1 px-1 ${isOwnMessage ? "text-right text-muted-foreground" : "text-left text-muted-foreground"
                                         }`}>
                                         {formatTime(message.createdAt)}
                                     </p>
@@ -203,27 +203,27 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                     })
                 ) : (
                     <div className="text-center py-12">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <MessageSquare className="w-8 h-8 text-gray-400" />
+                        <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                            <MessageSquare className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        <p className="text-sm text-gray-500 font-medium">No messages yet</p>
-                        <p className="text-xs text-gray-400 mt-1">Start the conversation!</p>
+                        <p className="text-sm text-muted-foreground font-medium">No messages yet</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Start the conversation!</p>
                     </div>
                 )}
 
                 {/* Typing Indicators */}
                 {typingIndicators && typingIndicators.length > 0 && (
                     <div className="flex justify-start space-x-3">
-                        <Avatar className="h-8 w-8 mt-1 ring-2 ring-white shadow-sm">
+                        <Avatar className="h-8 w-8 mt-1 ring-2 ring-background shadow-sm">
                             <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold text-xs">
                                 {typingIndicators[0].user?.name?.charAt(0)?.toUpperCase() || "U"}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="bg-white text-gray-600 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
+                        <div className="bg-card text-muted-foreground rounded-2xl px-4 py-3 shadow-sm border border-border">
                             <div className="flex space-x-1">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:150ms]" />
+                                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:300ms]" />
                             </div>
                         </div>
                     </div>
@@ -233,20 +233,20 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 bg-white">
+            <div className="p-4 border-t border-border bg-card">
                 <form onSubmit={handleSendMessage} className="flex space-x-3">
                     <Input
                         value={newMessage}
                         onChange={(e) => handleTyping(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 h-11 bg-gray-50 border-gray-200 rounded-2xl focus:bg-white focus:border-blue-300 transition-all"
+                        className="flex-1 h-11 bg-muted border-border rounded-2xl transition-all"
                         disabled={isSending}
                     />
                     <Button
                         type="submit"
                         disabled={!newMessage.trim() || isSending}
                         size="icon"
-                        className="h-11 w-11 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+                        className="h-11 w-11 rounded-full shadow-sm"
                     >
                         <Send className="w-4 h-4" />
                     </Button>

@@ -19,7 +19,7 @@ export function SignInCard() {
         setIsLoading(true);
 
         try {
-            await signIn("password", { email, password });
+            await signIn("password", { email, password, flow: "signIn" });
             router.push("/dashboard");
         } catch (error) {
             console.error("Sign in error:", error);
@@ -46,7 +46,7 @@ export function SignInCard() {
             <div className="space-y-3">
                 <Button
                     variant="outline"
-                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white border-2 border-gray-900 hover:border-gray-800 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white dark:border-gray-900 dark:hover:border-gray-800 bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-200 hover:border-gray-300 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                     onClick={() => handleOAuthSignIn("github")}
                     disabled={isLoading}
                 >
@@ -55,7 +55,7 @@ export function SignInCard() {
                 </Button>
                 <Button
                     variant="outline"
-                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white border-2 border-gray-900 hover:border-gray-800 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white dark:border-gray-900 dark:hover:border-gray-800 bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-200 hover:border-gray-300 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                     onClick={() => handleOAuthSignIn("google")}
                     disabled={isLoading}
                 >
@@ -115,7 +115,7 @@ export function SignInCard() {
                         className="h-14 text-base bg-gray-50 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all duration-200 text-gray-900 placeholder-gray-500"
                     />
                 </div>
-                <Button type="submit" className="w-full h-14 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5" disabled={isLoading}>
+                <Button type="submit" className="w-full h-14 text-lg font-semibold" disabled={isLoading}>
                     <Mail className="w-6 h-6 mr-3" />
                     Sign In with Email
                 </Button>

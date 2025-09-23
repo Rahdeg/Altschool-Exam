@@ -52,19 +52,19 @@ const getNotificationColor = (type: string) => {
     switch (type) {
         case "TASK_COMMENT":
         case "COMMENT_REPLY":
-            return "text-blue-600 bg-blue-100";
+            return "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20";
         case "REACTION_ADDED":
-            return "text-yellow-600 bg-yellow-100";
+            return "text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/20";
         case "TASK_STATUS_CHANGE":
-            return "text-green-600 bg-green-100";
+            return "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20";
         case "TASK_DUE_SOON":
-            return "text-orange-600 bg-orange-100";
+            return "text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-900/20";
         case "NEW_MESSAGE":
-            return "text-purple-600 bg-purple-100";
+            return "text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/20";
         case "TASK_MENTION":
-            return "text-pink-600 bg-pink-100";
+            return "text-pink-600 bg-pink-100 dark:text-pink-400 dark:bg-pink-900/20";
         default:
-            return "text-gray-600 bg-gray-100";
+            return "text-muted-foreground bg-muted";
     }
 };
 
@@ -123,10 +123,10 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
                 <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="flex items-start space-x-3 p-3 animate-pulse">
-                            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                            <div className="w-8 h-8 bg-muted-foreground/10 rounded-full"></div>
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                <div className="h-4 bg-muted-foreground/10 rounded w-3/4"></div>
+                                <div className="h-3 bg-muted-foreground/10 rounded w-1/2"></div>
                             </div>
                         </div>
                     ))}
@@ -178,7 +178,7 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
                         {notifications.map((notification) => (
                             <div
                                 key={notification._id}
-                                className={`p-4 hover:bg-muted/50 transition-colors ${!notification.isRead ? "bg-blue-50/50" : ""
+                                className={`p-4 hover:bg-muted/50 transition-colors ${!notification.isRead ? "bg-primary/5" : ""
                                     }`}
                             >
                                 <div className="flex items-start space-x-3">

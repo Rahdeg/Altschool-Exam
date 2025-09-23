@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SignInCard } from "./sign-in-card";
 import { SignUpCard } from "./sign-up-card";
+import Image from "next/image";
 
 export function AuthScreen() {
     const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -13,9 +14,7 @@ export function AuthScreen() {
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="w-20 h-20 bg-gradient-to-br from-primary via-primary to-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <svg className="w-10 h-10 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <Image src="/todo.svg" alt="TaskyFlow" className="w-10 h-10" width={40} height={40} />
                     </div>
                     <h1 className="text-4xl font-bold text-foreground mb-2">Welcome to TaskyFlow</h1>
                     <p className="text-lg text-muted-foreground">Sign in to your account or create a new one</p>

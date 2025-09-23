@@ -118,11 +118,11 @@ export function CommentItem({ comment }: CommentItemProps) {
                     {/* Comment Header */}
                     <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{comment.user.name || "Unknown User"}</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                             {formatDate(comment.createdAt)}
                         </span>
                         {comment.updatedAt !== comment.createdAt && (
-                            <span className="text-xs text-gray-400">(edited)</span>
+                            <span className="text-xs text-muted-foreground/70">(edited)</span>
                         )}
                     </div>
 
@@ -159,14 +159,14 @@ export function CommentItem({ comment }: CommentItemProps) {
                             </div>
                         </div>
                     ) : (
-                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                        <div className="text-sm text-foreground whitespace-pre-wrap">
                             {comment.body}
                         </div>
                     )}
 
                     {/* Comment Actions */}
                     {!isEditing && (
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -189,7 +189,7 @@ export function CommentItem({ comment }: CommentItemProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleDelete}
-                                className="h-auto p-1 text-xs text-red-500 hover:text-red-700"
+                                className="h-auto p-1 text-xs text-destructive hover:text-destructive/80"
                             >
                                 <Trash2 className="w-3 h-3 mr-1" />
                                 Delete
@@ -204,7 +204,7 @@ export function CommentItem({ comment }: CommentItemProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowReplies(!showReplies)}
-                                className="h-auto p-1 text-xs text-gray-500 hover:text-gray-700"
+                                className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
                             >
                                 {showReplies ? (
                                     <ChevronDown className="w-3 h-3 mr-1" />
