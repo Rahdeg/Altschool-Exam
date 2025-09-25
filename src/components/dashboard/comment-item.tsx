@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +28,7 @@ interface CommentItemProps {
     };
 }
 
-export function CommentItem({ comment }: CommentItemProps) {
+export const CommentItem = React.memo(function CommentItem({ comment }: CommentItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
     const [editText, setEditText] = useState(comment.body);
@@ -262,4 +262,4 @@ export function CommentItem({ comment }: CommentItemProps) {
             )}
         </div>
     );
-}
+});

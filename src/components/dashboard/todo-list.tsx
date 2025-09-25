@@ -140,6 +140,12 @@ export function TodoList({ filter }: TodoListProps) {
         const diff = now - timestamp;
         const days = Math.floor(diff / (24 * 60 * 60 * 1000));
 
+        // Handle edge cases for newly created todos
+        // If the difference is negative or very small (within 1 minute), treat as "Today"
+        if (diff < 0 || diff < 60 * 1000) {
+            return "Today";
+        }
+
         if (days === 0) return "Today";
         if (days === 1) return "Yesterday";
         return `${days} days ago`;

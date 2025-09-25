@@ -142,10 +142,6 @@ export function TodoActions({ todo, onTodoUpdate }: TodoActionsProps) {
                                 <MessageSquare className="w-4 h-4 mr-2" />
                                 Comments
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleMessage}>
-                                <MessageCircle className="w-4 h-4 mr-2" />
-                                Message
-                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={handleVisibilityToggle}>
                                 {todo.isPublic ? (
                                     <>

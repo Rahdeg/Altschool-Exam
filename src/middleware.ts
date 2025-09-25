@@ -5,10 +5,16 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-const isPublicPage = createRouteMatcher(["/auth"]);
+const isPublicPage = createRouteMatcher(["/auth", "/admin"]);
+const isAdminPage = createRouteMatcher(["/admin"]);
 
 export default convexAuthNextjsMiddleware(async (request) => {
   const isAuthenticated = await isAuthenticatedNextjs();
+
+  // Allow admin pages to be accessed by authenticated users
+  if (isAdminPage(request)) {
+    return; // Don't redirect admin pages
+  }
 
   if (!isPublicPage(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/auth");

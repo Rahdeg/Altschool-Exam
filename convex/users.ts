@@ -209,3 +209,153 @@ export const getTypingIndicators = query({
     return typingWithUsers;
   },
 });
+
+// Update user profile
+export const updateProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updateData: any = {};
+    if (args.name !== undefined) {
+      updateData.name = args.name;
+    }
+    if (args.image !== undefined) {
+      updateData.image = args.image;
+    }
+
+    await ctx.db.patch(userId, updateData);
+    return true;
+  },
+});
+
+// Get notification preferences
+export const getNotificationPreferences = query({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const preferences = await ctx.db
+      .query("notificationPreferences")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    return preferences;
+  },
+});
+
+// Initialize notification preferences (mutation)
+export const initializeNotificationPreferences = mutation({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Check if preferences already exist
+    const existingPreferences = await ctx.db
+      .query("notificationPreferences")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (existingPreferences) {
+      return existingPreferences;
+    }
+
+    // Create default preferences
+    const defaultPreferences = {
+      userId,
+      taskComments: true,
+      taskStatusChanges: true,
+      taskAssignments: true,
+      taskDueReminders: true,
+      commentReplies: true,
+      reactions: true,
+      directMessages: true,
+      mentions: true,
+      emailNotifications: true,
+      pushNotifications: true,
+      updatedAt: Date.now(),
+    };
+
+    const newPreferencesId = await ctx.db.insert(
+      "notificationPreferences",
+      defaultPreferences
+    );
+    return { ...defaultPreferences, _id: newPreferencesId };
+  },
+});
+
+// Update notification preferences
+export const updateNotificationPreferences = mutation({
+  args: {
+    taskComments: v.optional(v.boolean()),
+    taskStatusChanges: v.optional(v.boolean()),
+    taskAssignments: v.optional(v.boolean()),
+    taskDueReminders: v.optional(v.boolean()),
+    commentReplies: v.optional(v.boolean()),
+    reactions: v.optional(v.boolean()),
+    directMessages: v.optional(v.boolean()),
+    mentions: v.optional(v.boolean()),
+    emailNotifications: v.optional(v.boolean()),
+    pushNotifications: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const preferences = await ctx.db
+      .query("notificationPreferences")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    const updateData: any = {
+      updatedAt: Date.now(),
+    };
+
+    // Only update provided fields
+    Object.keys(args).forEach((key) => {
+      if (args[key as keyof typeof args] !== undefined) {
+        updateData[key] = args[key as keyof typeof args];
+      }
+    });
+
+    if (preferences) {
+      await ctx.db.patch(preferences._id, updateData);
+    } else {
+      // Create new preferences with defaults
+      const newPreferences = {
+        userId,
+        taskComments: args.taskComments ?? true,
+        taskStatusChanges: args.taskStatusChanges ?? true,
+        taskAssignments: args.taskAssignments ?? true,
+        taskDueReminders: args.taskDueReminders ?? true,
+        commentReplies: args.commentReplies ?? true,
+        reactions: args.reactions ?? true,
+        directMessages: args.directMessages ?? true,
+        mentions: args.mentions ?? true,
+        emailNotifications: args.emailNotifications ?? true,
+        pushNotifications: args.pushNotifications ?? true,
+        updatedAt: Date.now(),
+      };
+      await ctx.db.insert("notificationPreferences", newPreferences);
+    }
+
+    return true;
+  },
+});

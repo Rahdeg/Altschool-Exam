@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -16,26 +16,15 @@ import {
     ArrowLeft,
     Send,
     MoreVertical,
-    Phone,
-    Video,
-    Search,
-    Paperclip,
-    Mic,
-    CheckCheck,
-    Reply,
-    Forward,
     Star,
     Trash2,
-    Edit,
     Copy,
-    Download,
-    X
+    CheckCheck
 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -47,10 +36,9 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
     const [newMessage, setNewMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
-    const [replyToMessage, setReplyToMessage] = useState<Id<"messages"> | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const router = useRouter();
     const currentUser = useCurrentUser();
@@ -61,6 +49,8 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
     const sendMessage = useMutation(api.chats.sendMessage);
     const markAsRead = useMutation(api.chats.markAsRead);
     const updateTyping = useMutation(api.users.updateTyping);
+    const toggleMessageStar = useMutation(api.chats.toggleMessageStar);
+    const clearConversation = useMutation(api.chats.clearConversation);
 
     // Find the current conversation details
     const currentConversation = conversation?.find(conv => conv._id === conversationId);
@@ -83,6 +73,17 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
         }
     }, [messages, currentUser, markAsRead]);
 
+    // Auto-focus textarea when component mounts
+    useEffect(() => {
+        if (textareaRef.current) {
+            // Small delay to ensure the component is fully rendered
+            const timer = setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim() || isSending) return;
@@ -93,10 +94,8 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                 conversationId: conversationId as Id<"conversations">,
                 body: newMessage.trim(),
                 type: "text",
-                replyToMessageId: replyToMessage || undefined,
             });
             setNewMessage("");
-            setReplyToMessage(null);
 
             // Stop typing indicator
             await updateTyping({ conversationId: conversationId as Id<"conversations">, isTyping: false });
@@ -137,13 +136,15 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
         }, 1000);
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // Handle file upload logic here
-            toast.info("File upload feature coming soon!");
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (newMessage.trim() && !isSending) {
+                handleSendMessage(e as React.FormEvent<Element>);
+            }
         }
     };
+
 
     const handleEmojiClick = (emoji: string) => {
         setNewMessage(prev => prev + emoji);
@@ -152,19 +153,14 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
     const handleMessageAction = async (action: string, messageId: Id<"messages">) => {
         try {
             switch (action) {
-                case "edit":
-                    // Implement edit functionality
-                    toast.info("Edit feature coming soon!");
-                    break;
-                case "reply":
-                    setReplyToMessage(messageId);
-                    break;
-                case "forward":
-                    toast.info("Forward feature coming soon!");
-                    break;
                 case "copy":
                     navigator.clipboard.writeText(messages?.find(m => m._id === messageId)?.body || "");
                     toast.success("Message copied to clipboard");
+                    break;
+                case "star":
+                    await toggleMessageStar({ messageId });
+                    const message = messages?.find(m => m._id === messageId);
+                    toast.success(message?.isStarred ? "Message unstarred" : "Message starred");
                     break;
                 default:
                     break;
@@ -172,6 +168,20 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
         } catch (error) {
             console.error("Failed to perform action:", error);
             toast.error("Failed to perform action");
+        }
+    };
+
+    const handleClearChat = async () => {
+        if (!confirm("Are you sure you want to clear this chat? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            await clearConversation({ conversationId: conversationId as Id<"conversations"> });
+            toast.success("Chat cleared successfully");
+        } catch (error) {
+            console.error("Failed to clear chat:", error);
+            toast.error("Failed to clear chat");
         }
     };
 
@@ -187,6 +197,13 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
         const now = new Date();
         const messageDate = new Date(timestamp);
         const diffInDays = Math.floor((now.getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Handle edge cases for newly created messages
+        // If the difference is negative or very small (within 1 minute), treat as "Today"
+        const diffInMs = now.getTime() - messageDate.getTime();
+        if (diffInMs < 0 || diffInMs < 60 * 1000) {
+            return "Today";
+        }
 
         if (diffInDays === 0) {
             return "Today";
@@ -265,15 +282,6 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Search className="w-5 h-5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Phone className="w-5 h-5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Video className="w-5 h-5" />
-                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="rounded-full">
@@ -281,16 +289,7 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                                <Star className="w-4 h-4 mr-2" />
-                                Star messages
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Download className="w-4 h-4 mr-2" />
-                                Export chat
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem className="text-red-600" onClick={handleClearChat}>
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Clear chat
                             </DropdownMenuItem>
@@ -335,14 +334,14 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                                                 className={`rounded-2xl px-4 py-3 shadow-sm ${isOwnMessage
                                                     ? "bg-primary text-primary-foreground"
                                                     : "bg-card text-card-foreground border border-border"
-                                                    }`}
+                                                    } ${message.isStarred ? "ring-2 ring-yellow-400/50" : ""}`}
                                             >
-                                                {message.replyToMessageId && (
-                                                    <div className="border-l-4 border-muted-foreground/30 pl-3 mb-2 text-xs text-muted-foreground">
-                                                        Replying to: {messages?.find(m => m._id === message.replyToMessageId)?.body?.substring(0, 50)}...
-                                                    </div>
-                                                )}
-                                                <p className="text-sm leading-relaxed">{message.body}</p>
+                                                <div className="flex items-start justify-between">
+                                                    <p className="text-sm leading-relaxed flex-1">{message.body}</p>
+                                                    {message.isStarred && (
+                                                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 ml-2 mt-0.5 flex-shrink-0" />
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Message Actions */}
@@ -354,27 +353,14 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align={isOwnMessage ? "end" : "start"}>
-                                                        <DropdownMenuItem onClick={() => handleMessageAction("reply", message._id)}>
-                                                            <Reply className="w-4 h-4 mr-2" />
-                                                            Reply
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleMessageAction("forward", message._id)}>
-                                                            <Forward className="w-4 h-4 mr-2" />
-                                                            Forward
+                                                        <DropdownMenuItem onClick={() => handleMessageAction("star", message._id)}>
+                                                            <Star className={`w-4 h-4 mr-2 ${message.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`} />
+                                                            {message.isStarred ? "Unstar" : "Star"}
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleMessageAction("copy", message._id)}>
                                                             <Copy className="w-4 h-4 mr-2" />
                                                             Copy
                                                         </DropdownMenuItem>
-                                                        {isOwnMessage && (
-                                                            <>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem onClick={() => handleMessageAction("edit", message._id)}>
-                                                                    <Edit className="w-4 h-4 mr-2" />
-                                                                    Edit
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -428,55 +414,18 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Reply Preview */}
-            {replyToMessage && (
-                <div className="px-4 py-2 bg-muted border-t border-border">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                            <Reply className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                                Replying to: {messages?.find(m => m._id === replyToMessage)?.body?.substring(0, 50)}...
-                            </span>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setReplyToMessage(null)}
-                            className="h-6 w-6"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
-                    </div>
-                </div>
-            )}
 
             {/* Message Input */}
             <div className="p-4 border-t border-border bg-card">
                 <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="h-11 w-11 rounded-full"
-                    >
-                        <Paperclip className="w-5 h-5" />
-                    </Button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-                        aria-label="Upload file"
-                    />
-
                     <div className="flex-1 relative">
-                        <Input
+                        <Textarea
+                            ref={textareaRef}
                             value={newMessage}
                             onChange={(e) => handleTyping(e.target.value)}
-                            placeholder="Type a message..."
-                            className="h-11 bg-muted border-border rounded-2xl pr-12 transition-all"
+                            onKeyDown={handleKeyDown}
+                            placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                            className="min-h-[44px] max-h-32 bg-muted border-border rounded-2xl pr-12 transition-all resize-none"
                             disabled={isSending}
                         />
                         <div className="absolute right-1 top-1">
@@ -487,25 +436,14 @@ export function IndividualChat({ conversationId }: IndividualChatProps) {
                         </div>
                     </div>
 
-                    {newMessage.trim() ? (
-                        <Button
-                            type="submit"
-                            disabled={isSending}
-                            size="icon"
-                            className="h-11 w-11 rounded-full shadow-sm"
-                        >
-                            <Send className="w-5 h-5" />
-                        </Button>
-                    ) : (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-11 w-11 rounded-full"
-                        >
-                            <Mic className="w-5 h-5" />
-                        </Button>
-                    )}
+                    <Button
+                        type="submit"
+                        disabled={!newMessage.trim() || isSending}
+                        size="icon"
+                        className="h-11 w-11 rounded-full shadow-sm"
+                    >
+                        <Send className="w-5 h-5" />
+                    </Button>
                 </form>
             </div>
         </div>

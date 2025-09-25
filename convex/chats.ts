@@ -152,6 +152,7 @@ export const getMessages = query({
       .withIndex("by_conversation", (q) =>
         q.eq("conversationId", args.conversationId)
       )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .order("desc")
       .collect();
 
@@ -274,6 +275,75 @@ export const markAsRead = mutation({
         });
       }
     }
+
+    return true;
+  },
+});
+
+// Toggle star status for a message
+export const toggleMessageStar = mutation({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+
+    // Verify user is participant in the conversation
+    const conversation = await ctx.db.get(message.conversationId);
+    if (!conversation || !conversation.participants.includes(userId)) {
+      throw new Error("Unauthorized");
+    }
+
+    // Toggle star status
+    await ctx.db.patch(args.messageId, {
+      isStarred: !message.isStarred,
+    });
+
+    return !message.isStarred;
+  },
+});
+
+// Clear all messages in a conversation (soft delete)
+export const clearConversation = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Verify user is participant in this conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || !conversation.participants.includes(userId)) {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all messages in the conversation
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
+      .collect();
+
+    // Soft delete all messages
+    const deletePromises = messages.map((message) =>
+      ctx.db.patch(message._id, {
+        deletedAt: Date.now(),
+      })
+    );
+
+    await Promise.all(deletePromises);
 
     return true;
   },

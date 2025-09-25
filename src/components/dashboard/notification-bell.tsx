@@ -64,7 +64,7 @@ export function NotificationBell() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-80 max-h-[500px] overflow-hidden"
+                className="w-96 max-h-[600px] overflow-hidden p-0"
                 sideOffset={8}
             >
                 <NotificationPanel

@@ -15,7 +15,7 @@ export function DashboardHeader({ onChatClick }: DashboardHeaderProps) {
             <div className="px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 sm:space-x-4">
-                        <Link href="/dashboard" className="flex items-center space-x-2">
+                        <Link href="/" className="flex items-center space-x-2">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center">
                                 <Image src="/todo.svg" alt="TaskyFlow" className="w-6 h-6" width={24} height={24} />
                             </div>

@@ -193,3 +193,79 @@ export const remove = mutation({
     return args.id;
   },
 });
+
+// Optimized query that reduces N+1 database calls
+export const getByTodoOptimized = query({
+  args: { todoId: v.id("todos") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Verify the todo exists and user can access it
+    const todo = await ctx.db.get(args.todoId);
+    if (!todo) {
+      throw new Error("Todo not found");
+    }
+
+    if (!todo.isPublic && todo.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all comments for the todo
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_todo", (q) => q.eq("todoId", args.todoId))
+      .order("asc")
+      .collect();
+
+    if (comments.length === 0) {
+      return [];
+    }
+
+    // Get all unique user IDs
+    const userIds = [...new Set(comments.map((c) => c.userId))];
+
+    // Fetch all users in parallel
+    const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
+
+    // Create a map for quick user lookup
+    const userMap = new Map(users.map((user) => [user?._id, user]));
+
+    // Build comments with user data
+    const commentsWithUsers = comments.map((comment) => ({
+      ...comment,
+      user: {
+        _id: userMap.get(comment.userId)?._id,
+        name: userMap.get(comment.userId)?.name,
+        email: userMap.get(comment.userId)?.email,
+        image: userMap.get(comment.userId)?.image,
+      },
+    }));
+
+    // Organize comments into a tree structure
+    const commentMap = new Map<string, CommentWithReplies>();
+    const rootComments: CommentWithReplies[] = [];
+
+    commentsWithUsers.forEach((comment) => {
+      commentMap.set(comment._id, { ...comment, replies: [] });
+    });
+
+    commentsWithUsers.forEach((comment: CommentWithUser) => {
+      const commentWithReplies = commentMap.get(comment._id);
+      if (!commentWithReplies) return;
+
+      if (comment.parentCommentId) {
+        const parent = commentMap.get(comment.parentCommentId);
+        if (parent) {
+          parent.replies.push(commentWithReplies);
+        }
+      } else {
+        rootComments.push(commentWithReplies);
+      }
+    });
+
+    return rootComments;
+  },
+});

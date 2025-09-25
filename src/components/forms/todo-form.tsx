@@ -15,18 +15,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { CalendarIcon } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Doc } from "../../../convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 type Todo = Doc<"todos">;
 
@@ -41,7 +36,17 @@ const todoSchema = z.object({
     status: z.enum(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"]),
     priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
     tags: z.array(z.string()).optional(),
-    dueDate: z.number().optional(),
+    dueDate: z.number().optional().refine(
+        (date) => {
+            if (!date) return true; // Allow undefined/optional dates
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set to midnight for accurate comparison
+            return date >= today.getTime();
+        },
+        {
+            message: "Due date cannot be in the past",
+        }
+    ),
     isPublic: z.boolean(),
 });
 
@@ -160,57 +165,22 @@ export function TodoForm({ todo, onSuccess }: TodoFormProps) {
 
                     {/* Due Date */}
                     <div className="space-y-2">
-                        <Label>Due Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal h-10 px-3 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                                        !form.watch("dueDate") && "text-muted-foreground"
-                                    )}
-                                    disabled={isLoading}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {form.watch("dueDate") ? format(new Date(form.watch("dueDate")!), "MMM dd, yyyy") : "Pick a date"}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start" side="bottom" sideOffset={8}>
-                                <div className="bg-popover rounded-lg border border-border shadow-lg">
-                                    <Calendar
-                                        mode="single"
-                                        selected={form.watch("dueDate") ? new Date(form.watch("dueDate")!) : undefined}
-                                        onSelect={(date) => {
-                                            form.setValue("dueDate", date ? date.getTime() : undefined);
-                                        }}
-                                        initialFocus
-                                        className="rounded-lg"
-                                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                                        classNames={{
-                                            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                                            month: "space-y-4",
-                                            caption: "flex justify-center pt-1 relative items-center",
-                                            caption_label: "text-sm font-medium",
-                                            nav: "space-x-1 flex items-center",
-                                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border border-input hover:bg-accent hover:text-accent-foreground rounded-md",
-                                            nav_button_previous: "absolute left-1",
-                                            nav_button_next: "absolute right-1",
-                                            table: "w-full border-collapse space-y-1",
-                                            head_row: "flex",
-                                            head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                                            row: "flex w-full mt-2",
-                                            cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
-                                            day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md",
-                                            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                                            day_today: "bg-accent text-accent-foreground font-semibold",
-                                            day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-                                            day_disabled: "text-muted-foreground opacity-50",
-                                            day_hidden: "invisible",
-                                        }}
-                                    />
-                                </div>
-                            </PopoverContent>
-                        </Popover>
+                        <Label htmlFor="dueDate">Due Date</Label>
+                        <Input
+                            id="dueDate"
+                            type="date"
+                            className="w-48"
+                            value={form.watch("dueDate") ? new Date(form.watch("dueDate")!).toISOString().split('T')[0] : ""}
+                            onChange={(e) => {
+                                const dateValue = e.target.value ? new Date(e.target.value).getTime() : undefined;
+                                form.setValue("dueDate", dateValue);
+                            }}
+                            min={new Date().toISOString().split('T')[0]}
+                            disabled={isLoading}
+                        />
+                        {form.formState.errors.dueDate && (
+                            <p className="text-sm text-destructive">{form.formState.errors.dueDate.message}</p>
+                        )}
                     </div>
 
                     {/* Tags */}

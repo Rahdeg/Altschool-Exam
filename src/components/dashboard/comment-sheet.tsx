@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,10 +29,37 @@ interface CommentSheetProps {
 export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [debouncedTodoId, setDebouncedTodoId] = useState<Id<"todos"> | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const todo = useQuery(api.todos.get, { id: todoId });
-    const comments = useQuery(api.comments.getByTodo, { todoId });
+    // Add small debounce to prevent rapid queries
+    useEffect(() => {
+        if (isOpen && todoId) {
+            const timer = setTimeout(() => {
+                setDebouncedTodoId(todoId);
+            }, 50); // Small delay to prevent rapid queries
+
+            return () => clearTimeout(timer);
+        } else {
+            setDebouncedTodoId(null);
+        }
+    }, [isOpen, todoId]);
+
+    // Only fetch data when sheet is open to prevent unnecessary API calls
+    const todo = useQuery(api.todos.get, debouncedTodoId ? { id: debouncedTodoId } : "skip");
+    const comments = useQuery(api.comments.getByTodoOptimized, debouncedTodoId ? { todoId: debouncedTodoId } : "skip");
     const createComment = useMutation(api.comments.create);
+
+    // Auto-focus textarea when sheet opens and data is loaded
+    useEffect(() => {
+        if (isOpen && todo && comments !== undefined && textareaRef.current) {
+            // Small delay to ensure the drawer animation completes and textarea is rendered
+            const timer = setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 150);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, todo, comments]);
 
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,7 +72,6 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
                 todoId,
             });
             setNewComment("");
-            toast.success("Comment added successfully");
         } catch (error) {
             console.error("Failed to add comment:", error);
             toast.error("Failed to add comment");
@@ -54,6 +80,36 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (newComment.trim() && !isSubmitting) {
+                handleSubmitComment(e as React.FormEvent<Element>);
+            }
+        }
+    };
+
+
+    // Show loading state when sheet is open but data is still loading
+    if (isOpen && (!todo || comments === undefined)) {
+        return (
+            <Drawer open={isOpen} onOpenChange={onClose}>
+                <DrawerContent side="right" className="h-screen !w-full lg:!w-1/3 flex flex-col">
+                    <DrawerHeader className="flex-shrink-0 border-b border-border">
+                        <DrawerTitle className="text-lg font-semibold text-card-foreground">
+                            Loading...
+                        </DrawerTitle>
+                    </DrawerHeader>
+                    <div className="flex items-center justify-center h-full">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p className="text-sm text-muted-foreground">Loading comments...</p>
+                        </div>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+        );
+    }
 
     if (!todo) return null;
 
@@ -70,6 +126,12 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
         const diff = now - timestamp;
         const days = Math.floor(diff / (24 * 60 * 60 * 1000));
 
+        // Handle edge cases for newly created todos
+        // If the difference is negative or very small (within 1 minute), treat as "Today"
+        if (diff < 0 || diff < 60 * 1000) {
+            return "Today";
+        }
+
         if (days === 0) return "Today";
         if (days === 1) return "Yesterday";
         return `${days} days ago`;
@@ -77,7 +139,12 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
 
     return (
         <Drawer open={isOpen} onOpenChange={onClose}>
-            <DrawerContent side="right" className="h-screen !w-full lg:!w-1/3 flex flex-col">
+            <DrawerContent
+                side="right"
+                className="h-screen !w-full lg:!w-1/3 flex flex-col"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                onCloseAutoFocus={(e) => e.preventDefault()}
+            >
                 <DrawerHeader className="flex-shrink-0 border-b border-border">
                     <DrawerTitle className="text-lg font-semibold text-card-foreground">
                         {todo.title}
@@ -129,7 +196,31 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
                 {/* Comments Section - Scrollable */}
                 <div className="flex-1 overflow-y-auto p-4 min-h-0">
                     <div className="space-y-4">
-                        {comments && comments.length > 0 ? (
+                        {comments === undefined ? (
+                            // Skeleton loading state
+                            <div className="space-y-4">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="flex gap-3 animate-pulse">
+                                        <div className="h-8 w-8 bg-muted rounded-full flex-shrink-0"></div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-4 bg-muted rounded w-24"></div>
+                                                <div className="h-3 bg-muted rounded w-16"></div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="h-4 bg-muted rounded w-full"></div>
+                                                <div className="h-4 bg-muted rounded w-3/4"></div>
+                                            </div>
+                                            <div className="flex gap-4">
+                                                <div className="h-3 bg-muted rounded w-12"></div>
+                                                <div className="h-3 bg-muted rounded w-10"></div>
+                                                <div className="h-3 bg-muted rounded w-12"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : comments && comments.length > 0 ? (
                             comments.map((comment) => (
                                 <CommentItem key={comment._id} comment={comment} />
                             ))
@@ -146,9 +237,11 @@ export function CommentSheet({ todoId, isOpen, onClose }: CommentSheetProps) {
                 <div className="p-4 border-t border-border flex-shrink-0 bg-background">
                     <form onSubmit={handleSubmitComment} className="flex gap-2">
                         <Textarea
+                            ref={textareaRef}
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Add a comment..."
+                            onKeyDown={handleKeyDown}
+                            placeholder="Add a comment... (Enter to send, Shift+Enter for new line)"
                             className="flex-1 min-h-[80px] max-h-[120px] resize-none"
                             disabled={isSubmitting}
                         />

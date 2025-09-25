@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SmilePlus } from "lucide-react";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
+import { useTheme } from "next-themes";
 
 interface EmojiPickerProps {
     onEmojiSelect: (emoji: string) => void;
@@ -13,6 +14,7 @@ interface EmojiPickerProps {
 export function EmojiPickerComponent({ onEmojiSelect }: EmojiPickerProps) {
     const [showExtended, setShowExtended] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const { theme } = useTheme();
 
     // Ensure component is mounted before accessing theme
     useEffect(() => {
@@ -22,6 +24,13 @@ export function EmojiPickerComponent({ onEmojiSelect }: EmojiPickerProps) {
     const onEmojiClick = (emojiData: { emoji: string }) => {
         onEmojiSelect(emojiData.emoji);
         setShowExtended(false);
+    };
+
+    // Determine emoji picker theme based on current theme
+    const getEmojiPickerTheme = (): Theme => {
+        if (theme === "dark") return Theme.DARK;
+        if (theme === "light") return Theme.LIGHT;
+        return Theme.AUTO; // For system theme
     };
 
     // Don't render until mounted to avoid hydration mismatch
@@ -56,11 +65,16 @@ export function EmojiPickerComponent({ onEmojiSelect }: EmojiPickerProps) {
                     onEmojiClick={onEmojiClick}
                     width={320}
                     height={400}
-                    skinTonesDisabled={true}
+                    skinTonesDisabled={false}
                     searchDisabled={false}
+                    theme={getEmojiPickerTheme()}
                     previewConfig={{
-                        showPreview: false
+                        showPreview: true,
+                        defaultEmoji: "1f60a",
+                        defaultCaption: "Choose an emoji"
                     }}
+                    searchPlaceHolder="Search emojis..."
+                    emojiStyle={EmojiStyle.NATIVE}
                 />
             </PopoverContent>
         </Popover>

@@ -1,8 +1,5 @@
 "use client";
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -20,7 +17,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
-import { NotificationSettings } from "./notification-settings";
+import { useRouter } from "next/navigation";
 
 interface NotificationPanelProps {
     onMarkAllAsRead: () => void;
@@ -69,8 +66,7 @@ const getNotificationColor = (type: string) => {
 };
 
 export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPanelProps) {
-    const [showSettings, setShowSettings] = useState(false);
-
+    const router = useRouter();
     const notifications = useQuery(api.notifications.getMyNotifications, { limit: 20 });
     const markAsRead = useMutation(api.notifications.markAsRead);
     const removeNotification = useMutation(api.notifications.remove);
@@ -107,9 +103,10 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
         return new Date(timestamp).toLocaleDateString();
     };
 
-    if (showSettings) {
-        return <NotificationSettings onClose={() => setShowSettings(false)} />;
-    }
+    const handleSettingsClick = () => {
+        onClose(); // Close the notification panel
+        router.push("/settings"); // Navigate to settings page
+    };
 
     if (notifications === undefined) {
         return (
@@ -138,53 +135,57 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
-        <div className="w-full">
+        <div className="w-full bg-background">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border bg-card">
                 <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-semibold">Notifications</h3>
-                    {unreadCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                            {unreadCount} new
-                        </Badge>
-                    )}
+                    <Bell className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold text-foreground">Notifications</h3>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                     {unreadCount > 0 && (
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={onMarkAllAsRead}
-                            className="text-xs"
+                            className="text-xs h-8 px-3"
                         >
                             Mark all read
                         </Button>
                     )}
-                    <Button variant="ghost" size="icon" onClick={onClose}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        className="h-8 w-8 hover:bg-muted"
+                    >
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
 
             {/* Notifications List */}
-            <ScrollArea className="max-h-[400px]">
+            <ScrollArea className="max-h-[450px]">
                 {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground">
-                        <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p className="text-sm">No notifications yet</p>
+                    <div className="p-12 text-center text-muted-foreground">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+                            <Bell className="h-8 w-8 opacity-60" />
+                        </div>
+                        <h4 className="text-sm font-medium text-foreground mb-1">No notifications yet</h4>
+                        <p className="text-xs text-muted-foreground">You&apos;ll see updates about your tasks and messages here</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/50">
                         {notifications.map((notification) => (
                             <div
                                 key={notification._id}
-                                className={`p-4 hover:bg-muted/50 transition-colors ${!notification.isRead ? "bg-primary/5" : ""
+                                className={`group p-5 hover:bg-muted/30 transition-all duration-200 cursor-pointer ${!notification.isRead ? "bg-primary/5 border-l-4 border-l-primary" : ""
                                     }`}
                             >
-                                <div className="flex items-start space-x-3">
+                                <div className="flex items-start space-x-4">
                                     {/* Icon */}
                                     <div
-                                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getNotificationColor(
+                                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${getNotificationColor(
                                             notification.type
                                         )}`}
                                     >
@@ -194,52 +195,65 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
                                     {/* Content */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-foreground">
-                                                    {notification.title}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground mt-1">
-                                                    {notification.message}
-                                                </p>
-                                                <div className="flex items-center space-x-2 mt-2">
-                                                    {notification.actor.name && (
-                                                        <div className="flex items-center space-x-1">
-                                                            <Avatar className="h-4 w-4">
-                                                                <AvatarImage src={notification.actor.image} />
-                                                                <AvatarFallback className="text-xs">
-                                                                    {notification.actor.name?.charAt(0)}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {notification.actor.name}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    <span className="text-xs text-muted-foreground">
+                                            <div className="flex-1 min-w-0 space-y-2">
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-foreground leading-tight">
+                                                        {notification.title}
+                                                    </h4>
+                                                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                                                        {notification.message}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-3">
+                                                        {notification.actor.name && (
+                                                            <div className="flex items-center space-x-2">
+                                                                <Avatar className="h-5 w-5">
+                                                                    <AvatarImage src={notification.actor.image} />
+                                                                    <AvatarFallback className="text-xs font-medium">
+                                                                        {notification.actor.name?.charAt(0)}
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <span className="text-xs font-medium text-foreground">
+                                                                    {notification.actor.name}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground font-medium">
                                                         {formatTimeAgo(notification.createdAt)}
                                                     </span>
                                                 </div>
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="flex items-center space-x-1 ml-2">
+                                            <div className="flex items-center space-x-1 ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {!notification.isRead && (
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleMarkAsRead(notification._id)}
-                                                        className="h-6 w-6 p-0"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkAsRead(notification._id);
+                                                        }}
+                                                        className="h-7 w-7 p-0 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                                                        title="Mark as read"
                                                     >
-                                                        <CheckCircle className="h-3 w-3" />
+                                                        <CheckCircle className="h-3.5 w-3.5" />
                                                     </Button>
                                                 )}
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleRemoveNotification(notification._id)}
-                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveNotification(notification._id);
+                                                    }}
+                                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    title="Remove notification"
                                                 >
-                                                    <X className="h-3 w-3" />
+                                                    <X className="h-3.5 w-3.5" />
                                                 </Button>
                                             </div>
                                         </div>
@@ -252,12 +266,12 @@ export function NotificationPanel({ onMarkAllAsRead, onClose }: NotificationPane
             </ScrollArea>
 
             {/* Footer */}
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-border bg-muted/20">
                 <Button
                     variant="outline"
                     size="sm"
-                    className="w-full"
-                    onClick={() => setShowSettings(true)}
+                    className="w-full h-9 font-medium"
+                    onClick={handleSettingsClick}
                 >
                     <Settings className="h-4 w-4 mr-2" />
                     Notification Settings

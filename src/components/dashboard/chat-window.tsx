@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, ArrowLeft, MessageSquare } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
@@ -22,6 +22,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const currentUser = useCurrentUser();
     const conversation = useQuery(api.chats.getConversations);
@@ -52,6 +53,17 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             }
         }
     }, [messages, currentUser, markAsRead]);
+
+    // Auto-focus textarea when component mounts
+    useEffect(() => {
+        if (textareaRef.current) {
+            // Small delay to ensure the component is fully rendered
+            const timer = setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,6 +115,15 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 await updateTyping({ conversationId, isTyping: false });
             }
         }, 1000);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (newMessage.trim() && !isSending) {
+                handleSendMessage(e as React.FormEvent<Element>);
+            }
+        }
     };
 
     const formatTime = (timestamp: number) => {
@@ -234,12 +255,14 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
             {/* Message Input */}
             <div className="p-4 border-t border-border bg-card">
-                <form onSubmit={handleSendMessage} className="flex space-x-3">
-                    <Input
+                <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
+                    <Textarea
+                        ref={textareaRef}
                         value={newMessage}
                         onChange={(e) => handleTyping(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1 h-11 bg-muted border-border rounded-2xl transition-all"
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                        className="flex-1 min-h-[44px] max-h-32 bg-muted border-border rounded-2xl transition-all resize-none"
                         disabled={isSending}
                     />
                     <Button

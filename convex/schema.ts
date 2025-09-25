@@ -83,6 +83,7 @@ const schema = defineSchema({
     replyToMessageId: v.optional(v.id("messages")),
     editedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
+    isStarred: v.optional(v.boolean()),
     createdAt: v.number(),
   })
     .index("by_conversation", ["conversationId"])
@@ -167,6 +168,22 @@ const schema = defineSchema({
     pushNotifications: v.boolean(),
     updatedAt: v.number(),
   }).index("by_user", ["userId"]),
+
+  // Admin settings table
+  adminSettings: defineTable({
+    adminPassword: v.string(),
+    lastUpdated: v.number(),
+  }),
+
+  // Admin sessions table
+  adminSessions: defineTable({
+    sessionToken: v.string(),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_session", ["sessionToken"])
+    .index("by_active", ["isActive"]),
 });
 
 export default schema;
