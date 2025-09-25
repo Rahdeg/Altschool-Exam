@@ -74,9 +74,7 @@ export function LandingPage() {
                                 <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
-                        <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 border-foreground bg-foreground text-background font-semibold hover:bg-foreground/90">
-                            Watch Demo
-                        </Button>
+
                     </div>
                 </div>
             </section>
@@ -251,9 +249,7 @@ export function LandingPage() {
                                 <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
-                        <Button size="lg" variant="outline" className="w-full sm:w-auto text-white border-white hover:bg-white hover:text-gray-900">
-                            Learn More
-                        </Button>
+
                     </div>
                 </div>
             </section>
@@ -277,7 +273,7 @@ export function LandingPage() {
                             <h3 className="font-semibold text-foreground mb-4">Product</h3>
                             <ul className="space-y-2 text-muted-foreground">
                                 <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
-                                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+
                                 <li><a href="#" className="hover:text-foreground transition-colors">Updates</a></li>
                             </ul>
                         </div>
@@ -285,14 +281,14 @@ export function LandingPage() {
                             <h3 className="font-semibold text-foreground mb-4">Company</h3>
                             <ul className="space-y-2 text-muted-foreground">
                                 <li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
-                                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
+
                                 <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
                             </ul>
                         </div>
                         <div>
                             <h3 className="font-semibold text-foreground mb-4">Support</h3>
                             <ul className="space-y-2 text-muted-foreground">
-                                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
+
                                 <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
                                 <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
                             </ul>

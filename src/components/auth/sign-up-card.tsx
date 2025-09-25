@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Github, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { toast } from "sonner";
 
 export function SignUpCard() {
     const [name, setName] = useState("");
@@ -21,9 +22,24 @@ export function SignUpCard() {
 
         try {
             await signIn("password", { email, password, name, flow: "signUp" });
+            toast.success("Account created successfully!");
             router.push("/dashboard");
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Sign up error:", error);
+
+            // Handle different types of errors
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes("User already exists")) {
+                toast.error("An account with this email already exists. Please sign in instead.");
+            } else if (errorMessage.includes("Invalid email")) {
+                toast.error("Please enter a valid email address.");
+            } else if (errorMessage.includes("Password too weak")) {
+                toast.error("Password is too weak. Please choose a stronger password.");
+            } else if (errorMessage.includes("Name required")) {
+                toast.error("Please enter your full name.");
+            } else {
+                toast.error("Sign up failed. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -33,9 +49,11 @@ export function SignUpCard() {
         setIsLoading(true);
         try {
             await signIn(provider);
+            toast.success(`Successfully signed up with ${provider}!`);
             router.push("/dashboard");
-        } catch (error) {
+        } catch (error: unknown) {
             console.error(`${provider} sign up error:`, error);
+            toast.error(`${provider} sign up failed. Please try again.`);
         } finally {
             setIsLoading(false);
         }
@@ -47,7 +65,7 @@ export function SignUpCard() {
             <div className="space-y-3">
                 <Button
                     variant="outline"
-                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white dark:border-gray-900 dark:hover:border-gray-800 bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-200 hover:border-gray-300 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full h-12 bg-background hover:bg-accent text-foreground border-border hover:border-border/80 font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
                     onClick={() => handleOAuthSignUp("github")}
                     disabled={isLoading}
                 >
@@ -56,7 +74,7 @@ export function SignUpCard() {
                 </Button>
                 <Button
                     variant="outline"
-                    className="w-full h-12 bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white dark:border-gray-900 dark:hover:border-gray-800 bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-200 hover:border-gray-300 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full h-12 bg-background hover:bg-accent text-foreground border-border hover:border-border/80 font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
                     onClick={() => handleOAuthSignUp("google")}
                     disabled={isLoading}
                 >
@@ -85,10 +103,10 @@ export function SignUpCard() {
             {/* Divider */}
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-200" />
+                    <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase font-medium">
-                    <span className="bg-white px-3 text-gray-500">Or continue with</span>
+                    <span className="bg-card px-3 text-muted-foreground">Or continue with</span>
                 </div>
             </div>
 
@@ -102,7 +120,7 @@ export function SignUpCard() {
                         onChange={(e) => setName(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-14 text-base bg-gray-50 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all duration-200 text-gray-900 placeholder-gray-500"
+                        className="h-12 text-base"
                     />
                 </div>
                 <div>
@@ -113,7 +131,7 @@ export function SignUpCard() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-14 text-base bg-gray-50 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all duration-200 text-gray-900 placeholder-gray-500"
+                        className="h-12 text-base"
                     />
                 </div>
                 <div>
@@ -124,23 +142,16 @@ export function SignUpCard() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-14 text-base bg-gray-50 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all duration-200 text-gray-900 placeholder-gray-500"
+                        className="h-12 text-base"
                     />
                 </div>
-                <Button type="submit" className="w-full h-14 text-lg font-semibold" disabled={isLoading}>
-                    <Mail className="w-6 h-6 mr-3" />
+                <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={isLoading}>
+                    <Mail className="w-5 h-5 mr-2" />
                     Create Account
                 </Button>
             </form>
 
-            <div className="text-center">
-                <p className="text-sm text-gray-600">
-                    Already have an account?{" "}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium underline-offset-4 hover:underline">
-                        Sign in
-                    </a>
-                </p>
-            </div>
+
         </div>
     );
 }
