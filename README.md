@@ -124,6 +124,7 @@ bun run setup-admin your-secure-password
 
 2. **Access admin dashboard:**
 Navigate to [http://localhost:3000/admin](http://localhost:3000/admin)
+Live admin password: Temitope2025
 
 ## 📁 Project Structure
 
